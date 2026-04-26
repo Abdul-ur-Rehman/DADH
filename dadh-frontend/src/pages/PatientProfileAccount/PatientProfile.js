@@ -923,6 +923,7 @@ const PatientProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editPatientMode, setEditPatientMode] = useState(false);
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const BASE_URL = "http://localhost:5001/api";
@@ -955,7 +956,6 @@ const PatientProfile = () => {
         setEditedPatient(json.data);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching data:", err);
         setError(`Error fetching patient data: ${err.message || err}`);
         setLoading(false);
       }
@@ -968,13 +968,42 @@ const PatientProfile = () => {
   };
 
   const handleSavePatient = async () => {
+    if (!patientId) {
+      alert("Cannot save: patient ID is missing.");
+      return;
+    }
+    setSaving(true);
     try {
-      // TODO: Send editedPatient to backend
-      setPatientData(editedPatient);
+      const payload = {
+        name: editedPatient.name,
+        email: editedPatient.email,
+        phone: editedPatient.phone,
+        city: editedPatient.city,
+        state: editedPatient.state,
+        DOB: editedPatient.DOB,
+        medicareNumber: editedPatient.medicareNumber,
+        gender: editedPatient.gender,
+        zipCode: editedPatient.zipCode,
+        address: editedPatient.address,
+        allergies: editedPatient.allergies,
+      };
+      const res = await fetch(`${BASE_URL}/patient/auth/update/${patientId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.state) {
+        throw new Error(json.message || `Save failed (HTTP ${res.status})`);
+      }
+      setPatientData(json.data || editedPatient);
+      setEditedPatient(json.data || editedPatient);
       setEditPatientMode(false);
-      console.log("Patient data saved:", editedPatient);
+      alert("Patient profile updated successfully.");
     } catch (err) {
-      console.error("Error saving patient data:", err);
+      alert(`Error saving patient profile: ${err.message || err}`);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1189,8 +1218,8 @@ const PatientProfile = () => {
 
                   {editPatientMode && (
                     <div className="text-start mt-3">
-                      <Button color="success" onClick={handleSavePatient}>
-                        Save Changes
+                      <Button color="success" onClick={handleSavePatient} disabled={saving}>
+                        {saving ? "Saving..." : "Save Changes"}
                       </Button>
                     </div>
                   )}

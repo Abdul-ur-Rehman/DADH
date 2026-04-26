@@ -185,11 +185,14 @@ const getCheckProviderNumber = async (req, res) => {
   const { isActive } = req.body;
 
   try {
-    const updated = await DoctorRequest.findByIdAndUpdate(
+    const updated = await Doctor.findByIdAndUpdate(
       id,
       { isActive },
       { new: true }
     );
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
     res.json({ success: true, data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });

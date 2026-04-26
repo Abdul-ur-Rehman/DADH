@@ -36,8 +36,18 @@ const billingSchema = new mongoose.Schema(
     issued_at: {
       type: Date,
       default: Date.now,
-    }
     },
+
+    documentUrl: {
+      type: String,
+      default: "",
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Sent", "Paid", "Cancelled"],
+      default: "Pending",
+    },
+  },
 
   { timestamps: true }
 );

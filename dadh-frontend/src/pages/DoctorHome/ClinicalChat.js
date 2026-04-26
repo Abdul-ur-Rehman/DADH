@@ -4,8 +4,7 @@ import "@sendbird/uikit-react/dist/index.css";
 import { Grid, Box } from "@mui/material";
 import "./ClinicalChat.css"; // Import external CSS
 
-// const APP_ID = "77C305A1-ACF1-48B6-8B75-E9C7882A0BC3";
-const APP_ID = "0C9C0093-D483-46BC-9D98-938BE5FE8A84";
+const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID;
 
 const DEFAULT_CHANNEL =
   "sendbird_open_channel_29962_fd304b2d59617fd96e7b285f6b0854654fe2ca9e";

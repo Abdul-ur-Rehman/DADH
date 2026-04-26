@@ -156,12 +156,13 @@ const login = async (req, res, next) => {
       console.error("❌ SMS sending failed:", smsErr.message);
     }
 
-    // 6. Send response
+    // 6. Send response (strip OTP fields from response — kept in DB only for verify step)
+    const { otp: _otp, otpExpiry: _exp, ...patientSafe } = patient.toObject();
     res.status(200).json({
       state: true,
       message: "OTP sent to your registered phone number.",
       token: await generateToken(patient, next), // JWT
-      data: patient, // isme otp + expiry included honge
+      data: patientSafe,
     });
   } catch (err) {
     console.error("Patient login error:", err);
@@ -329,6 +330,7 @@ const updatePatientById = async (req, res, next) => {
       gender,
       zipCode,
       allergies,
+      address,
     } = req.body;
     const patientId = req.params.patientId; // Assuming the patient ID is passed as a parameter
 

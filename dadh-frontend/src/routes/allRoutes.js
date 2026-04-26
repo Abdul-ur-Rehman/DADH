@@ -209,10 +209,10 @@ const userRoutes = [
     path: "/doctor/myAccount", component: <DoctorMyAccountPage />, allowedRoles: ['doctor']
   },
   {
-    path: "/doctor/billing", component: <DoctorLoginPage />, allowedRoles: ['doctor']
+    path: "/doctor/billing", component: <BillingPage />, allowedRoles: ['doctor']
   },
   {
-    path: "/doctor/support", component: <DoctorLoginPage />, allowedRoles: ['doctor']
+    path: "/doctor/support", component: <SupportPage />, allowedRoles: ['doctor']
   },
   {
     path: "/doctor/startConsult/:id", component: <DoctorStartConsultPage />, allowedRoles: ['doctor']

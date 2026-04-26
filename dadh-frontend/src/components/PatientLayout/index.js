@@ -98,7 +98,6 @@ class Layout extends Component {
 
     const isTokenExpired = (token) => {
       const decode = decodeJWT(token);
-      console.log(Date.now())
       return decode.exp * 1000 < Date.now()
     };
 

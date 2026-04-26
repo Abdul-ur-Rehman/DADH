@@ -1338,12 +1338,15 @@ const getCertifications = async (req, res) => {
   const { consultationId } = req.params;
 
   try {
-    const certificates = await Certificate.find({ consultationId });
+    const consultation = await Consultation.findById(consultationId).select("certificates");
+    if (!consultation) {
+      return res.status(404).json({ state: false, message: "Consultation not found" });
+    }
 
     return res.status(200).json({
       state: true,
       message: "Certifications fetched successfully",
-      data: certificates
+      data: consultation.certificates || [],
     });
   } catch (err) {
     return res.status(500).json({ state: false, message: "Server error", error: err.message });
@@ -1796,7 +1799,6 @@ const getConditions = async (req, res, next) => {
     }
 
     const patient = await Patient.findById(patientId);
-    console.log("Fetched patient:", patient);
 
     if (!patient) {
       return res.status(404).json({

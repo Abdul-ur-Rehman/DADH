@@ -203,8 +203,6 @@ const login = async (req, res, next) => {
         prescriberNumber: doctor.prescriberNumber,
         providerNumber: doctor.providerNumber,
         lastLogin: doctor.lastLogin,
-        otp: doctor.otp,
-        otpExpiry: doctor.otpExpiry,
       },
     });
   } catch (err) {
@@ -305,7 +303,6 @@ const resendOtp = async (req, res, next) => {
     res.status(200).json({
       state: true,
       message: "OTP resent successfully",
-      otp: newOtp, // ⚠️ Only for testing, remove in production
     });
   } catch (err) {
     console.error("Resend OTP error:", err);

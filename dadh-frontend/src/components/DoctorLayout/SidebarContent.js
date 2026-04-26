@@ -76,7 +76,7 @@ const SidebarContent = (props) => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const api = "http://localhost:5001/api/doctor/getAll";
+        const api = `${process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"}/doctor/getAll`;
         const response = await fetch(api);
         const result = await response.json();
         if (response.ok) {
