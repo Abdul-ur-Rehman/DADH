@@ -1,0 +1,132 @@
+/* ──────────────────────────────────────────────
+   BASE SIDEBAR LAYOUT
+   ──────────────────────────────────────────────*/
+.vertical-menu {
+  background: #fff;
+  min-height: 100vh;
+  overflow-y: auto;
+  transition: width 0.25s ease;
+  z-index: 100;
+}
+
+#sidebar-menu {
+  padding: 10px 0;
+}
+
+#sidebar-menu .menu-title {
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 20px;
+  color: #000;
+}
+
+/* ──────────────────────────────────────────────
+   MENU ROWS  (links, buttons, collapsible toggles)
+   ──────────────────────────────────────────────*/
+.menu-link,
+#sidebar-menu ul li a {          /* keep compatibility with older markup */
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: #007bff;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.menu-link svg,
+#sidebar-menu ul li a svg {
+  color: #007bff;
+  transition: color 0.15s;
+}
+
+/* Hover / active */
+.menu-link:hover,
+.menu-link:focus,
+#sidebar-menu ul li a:hover,
+#sidebar-menu ul li a.active,
+#sidebar-menu ul li.mm-active > a {
+  background: #e6f0ff;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.menu-link:hover svg,
+.menu-link:focus svg,
+#sidebar-menu ul li a:hover svg,
+#sidebar-menu ul li a.active svg,
+#sidebar-menu ul li.mm-active > a svg {
+  color: #007bff !important;
+}
+
+/* Chevron (for collapsible rows) */
+.chevron {
+  transition: transform 0.3s;   /* fixed typo: transform */
+  font-size: 0.8rem;
+}
+
+/* Dot in “Online Doctors” list */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Collapsible submenu animation */
+.sub-menu {
+  transition: max-height 0.3s ease;
+}
+
+/* ──────────────────────────────────────────────
+   COLLAPSED (vertical-collapsed) MODE
+   ──────────────────────────────────────────────*/
+body.vertical-collapsed .vertical-menu {
+  width: 70px !important;
+}
+
+body.vertical-collapsed .main-content {
+  margin-left: 70px;
+}
+
+/* Hide titles / text, keep icons centered */
+body.vertical-collapsed #sidebar-menu .menu-title { display: none; }
+body.vertical-collapsed #sidebar-menu { padding-left: 0 !important; }
+body.vertical-collapsed #sidebar-menu ul { padding-left: 0 !important; }
+
+body.vertical-collapsed #sidebar-menu ul li {
+  text-align: center;
+}
+
+body.vertical-collapsed #sidebar-menu ul li a,
+body.vertical-collapsed #sidebar-menu ul li .menu-link {
+  width: 100%;
+  padding: 16px 0;
+  justify-content: center;
+}
+
+body.vertical-collapsed #sidebar-menu ul li a span,
+body.vertical-collapsed #sidebar-menu ul li .menu-link span {
+  display: none;
+}
+
+body.vertical-collapsed #sidebar-menu ul li a svg,
+body.vertical-collapsed #sidebar-menu ul li .menu-link svg {
+  margin: 0;
+  color: #007bff;
+}
+
+/* Hover in collapsed state */
+body.vertical-collapsed #sidebar-menu ul li a:hover,
+body.vertical-collapsed #sidebar-menu ul li .menu-link:hover {
+  background: #e3f0e7;
+}
+
+body.vertical-collapsed #sidebar-menu ul li a:hover svg,
+body.vertical-collapsed #sidebar-menu ul li .menu-link:hover svg {
+  color: #007bff !important;
+}
+
+/* Hide big logo when sidebar collapsed */
+body.vertical-collapsed .navbar-brand-box .logo-lg {
+  display: none;
+}

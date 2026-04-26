@@ -1,0 +1,64 @@
+.chat-layout-container {
+  height: 85vh;
+  width: 102%;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.chat-sidebar {
+  width: 250px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  overflow-y: auto;
+  display: none; /* Hide by default, enable if needed */
+}
+
+.chat-box-right {
+  flex-grow: 1;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Force Sendbird to fit container */
+.chat-box-right .sendbird-app__wrap,
+.chat-box-right .sendbird-app__conversation {
+  height: 100% !important;
+}
+
+/* Placeholder */
+.chat-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  color: #999;
+}
+
+/* ✅ Responsive */
+@media (max-width: 768px) {
+  .chat-layout-container {
+    flex-direction: column;
+    padding: 0.5rem;
+  }
+
+  .chat-sidebar {
+    display: none;
+  }
+
+  .chat-box-right {
+    width: 100%;
+    height: calc(100vh - 64px);
+    border-radius: 12px;
+  }
+}

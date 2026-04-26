@@ -1,0 +1,122 @@
+.consult-history-container {
+    margin-top: 10px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    width: 100%;
+  }
+  
+  
+  .content-section {
+    padding: 16px;
+    margin-top: 0;
+    width: 100%;
+  }
+  
+  .consultations-today {
+    margin-top: 12px;
+    font-weight: bold;
+  }
+  
+  .large-number {
+    font-size: 1.2rem;
+  }
+  
+  .patient-list {
+    margin-top: 16px;
+  }
+  .consultations-header {
+    display: flex;
+    justify-content: space-between; /* Left-Right Alignment */
+    align-items: center;
+    flex-wrap: wrap; /* Mobile ke liye wrapping */
+    margin-bottom: 15px;
+  }
+  
+  .consultations-today {
+    flex-grow: 1; /* Left side content automatically adjust hoga */
+  }
+  
+  .filter-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  
+  .patient-card {
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    width: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .patient-card:hover {
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+    background-color: #f5f5f5;
+  }
+  
+  .patient-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    margin-right: 12px;
+  }
+  
+  .info-patient {
+    flex-grow: 1;
+  }
+  
+  .patient-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .patient-name {
+    font-weight: bold;
+  }
+  
+  .consultation-date {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-weight: bold;
+    color: gray;
+  }
+  
+  .consultation-category {
+    font-weight: bold;
+  }
+  
+  .consultation-notes {
+    color: gray;
+  }
+  
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .filter-section {
+    flex-wrap: wrap; /* Items ko wrap hone do instead of stacking */
+    justify-content: space-between; /* Proper alignment maintain kare */
+  }
+
+  .patient-card {
+    flex-wrap: wrap;
+    align-items: center; /* Center align rakhne ke liye */
+  }
+
+  .patient-icon {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px; /* Icon ke right space dene ke liye */
+  }
+}
+
+  

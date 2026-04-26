@@ -1,0 +1,16 @@
+.my-toast {
+    font-size: 10px !important;       /* Smaller font */
+    padding: 6px 10px !important;     /* Less padding */
+    margin-top: 10px !important;      
+    margin-right: 10px !important;    
+    width: auto !important;
+    max-width: none !important;
+    white-space: nowrap !important;  /* Force single line */
+    height: auto !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* Optional: subtle shadow */
+  }
+  .toast-title {
+    font-size: 20px; /* or whatever size you prefer */
+    font-weight: 500;
+  }
+  

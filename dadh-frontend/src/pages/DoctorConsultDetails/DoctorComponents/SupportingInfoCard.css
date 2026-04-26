@@ -1,0 +1,233 @@
+.supporting-info-card {
+  margin-left: 40px;
+  margin-top: -20px;
+  max-width: 950px;
+  width: 100%;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  height: 49vh;
+}
+
+
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.icon-arrow {
+  color: #007bff;
+  font-size: 18px;
+}
+
+.icon-plus {
+  margin-right: 5px;
+  cursor: pointer;
+  color: #007bff;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modal .modal-header .close {
+  background: none;
+  border: none;
+  font-size: 20px;
+}
+
+.modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table {
+  margin-top: 10px;
+}
+
+.full-card-textarea {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  resize: none;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+h6 {
+  margin: 0;
+  font-weight: bold;
+  text-align: left;
+  flex-grow: 1;
+}
+
+h5 {
+  margin: 0;
+  font-weight: bold;
+  text-align: left;
+  flex-grow: 1;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+/* ======= Mobile Devices (Portrait) — max-width 480px ======= */
+@media screen and (max-width: 480px) {
+  .notes-card {
+    margin: 10px;
+    padding: 12px;
+  }
+
+  .notes-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notes-header strong {
+    font-size: 15px;
+  }
+
+  .note-inputs {
+    flex-direction: column;
+  }
+
+  .note-inputs input {
+    width: 100%;
+  }
+
+  .notes-textarea {
+    height: 130px;
+  }
+
+  .save-note-btn {
+    width: 100%;
+  }
+}
+
+
+/* ======= Tablets (Landscape phones & small tablets) — 481px to 767px ======= */
+@media screen and (min-width: 481px) and (max-width: 767px) {
+  .notes-card {
+    margin: 15px;
+    padding: 15px;
+  }
+
+  .notes-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notes-header strong {
+    font-size: 16px;
+  }
+
+  .note-inputs {
+    flex-direction: column;
+  }
+
+  .note-inputs input {
+    width: 100%;
+  }
+
+  .notes-textarea {
+    height: 150px;
+  }
+
+  .save-note-btn {
+    width: 100%;
+  }
+}
+
+
+/* ======= Tablets & Small Laptops — 768px to 1024px ======= */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .notes-card {
+    margin: 20px;
+    padding: 20px;
+    margin-right: 15px;
+  }
+
+  .notes-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .notes-header strong {
+    font-size: 17px;
+  }
+
+  .note-inputs {
+    flex-direction: row;
+  }
+
+  .note-inputs input {
+    width: auto;
+  }
+
+  .notes-textarea {
+    height: 180px;
+  }
+
+  .save-note-btn {
+    width: auto;
+  }
+}
+
+
+/* ======= Desktops & Large Screens — min-width 1025px ======= */
+@media screen and (min-width: 1025px) {
+  .notes-card {
+    margin: 30px 50px;
+    padding: 25px;
+    max-width: 900px;
+  }
+
+  .notes-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .notes-header strong {
+    font-size: 18px;
+  }
+
+  .note-inputs {
+    flex-direction: row;
+  }
+
+  .note-inputs input {
+    flex: 1;
+  }
+
+  .notes-textarea {
+    height: 200px;
+  }
+
+  .save-note-btn {
+    width: auto;
+  }
+}

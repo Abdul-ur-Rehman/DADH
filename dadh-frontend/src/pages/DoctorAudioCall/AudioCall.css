@@ -1,0 +1,28 @@
+.audio-call-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .audio-call-paper {
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  @media (max-width: 600px) {
+    .audio-call-container {
+      height: auto;
+      min-height: 100vh;
+    }
+  
+    .audio-call-paper {
+      padding: 15px;
+      max-width: 90%;
+    }
+  }
+  

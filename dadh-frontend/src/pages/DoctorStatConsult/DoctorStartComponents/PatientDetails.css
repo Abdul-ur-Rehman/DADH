@@ -1,0 +1,54 @@
+.card-container {
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  background-color: #fff;
+  transition: all 0.3s ease-in-out;
+
+}
+
+.patient-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+}
+
+.label-text {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.label-value {
+  font-weight: 900;
+}
+
+.full-width-btn {
+  width: 100%;
+  background-color: #007bff;
+  /* replace with your primary */
+  border-radius: 0.5rem;
+  color: white;
+  padding: 10px 0;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+.full-width-btn:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}

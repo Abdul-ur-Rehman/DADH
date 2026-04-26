@@ -1,0 +1,50 @@
+.condition {
+    border-radius: 20px;
+}
+
+.container-class {
+    max-width: 600px; /* Set a maximum width */
+    width: 95%; /* Make it responsive */
+    margin: 0 auto !important; /* Forcefully remove top margin */
+    padding: 15px; /* Reduce padding */
+    margin-bottom: 10px; /* Reduce bottom spacing */
+    border-radius: 10px;
+    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); */
+    background: #fff;
+    /* transition: all 0.3s ease-in-out; */
+  }
+  
+  /* Forcefully remove any extra margin from body/html */
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Responsive Styling */
+  @media (max-width: 768px) {
+    .container-class {
+      max-width: 90%;
+      padding: 10px;
+      border-radius: 15px;
+      margin-top: 0px !important; /* Ensure no top margin */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .container-class {
+      max-width: 95%;
+      padding: 8px;
+      border-radius: 15px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.08);
+      margin-top: 0px !important; /* Remove spacing */
+    }
+  
+    .title-card {
+      font-size: 16px;
+    }
+  
+    .text-card {
+      font-size: 14px;
+    }
+  }
+  

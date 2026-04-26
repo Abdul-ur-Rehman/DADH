@@ -1,0 +1,59 @@
+.header-stats {
+  display: flex;
+  justify-content: space-between; /* Keep items spaced */
+  align-items: center;
+  width: 100%;
+  padding: 0 20px;
+  gap: 10px; /* Small gap between boxes */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  flex-wrap: nowrap; /* Prevent wrapping */
+  -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+}
+
+.header-box {
+  padding: 10px;
+  text-align: center;
+  flex: 0 0 auto; /* Grow, shrink, basis 30% width each */
+  min-width: 150px; /* Prevent too small boxes */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Headings and text styling same as before */
+.header-box h5 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.header-box h4, .header-box p {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Colors */
+.billing {
+  color: green;
+}
+
+.patients {
+  color: blue;
+}
+
+.queue {
+  color: red;
+}
+
+/* Responsive Fix for smaller screens */
+@media (max-width: 768px) {
+  .header-stats {
+    padding: 0 10px;
+  }
+
+  .header-box {
+    min-width: 140px; /* Slightly smaller if screen is tighter */
+  }
+}
