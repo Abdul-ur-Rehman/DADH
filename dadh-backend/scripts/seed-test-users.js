@@ -14,6 +14,8 @@ const TEST_PATIENT = {
   medicareNumber: "1234567890",
   gender: "male",
   status: 1,
+  address: "123 George Street, Sydney NSW",
+  zipCode: "2000",
 };
 
 const TEST_ADMIN = {
@@ -30,15 +32,12 @@ const TEST_ADMIN = {
     console.log("Connected to MongoDB\n");
 
     // ─── PATIENT ──────────────────────────────────────────────────────
-    const existingPatient = await Patient.findOne({ phone: TEST_PATIENT.phone });
-    if (existingPatient) {
-      Object.assign(existingPatient, TEST_PATIENT);
-      await existingPatient.save();
-      console.log("Updated existing test patient:", existingPatient._id.toString());
-    } else {
-      const p = await Patient.create(TEST_PATIENT);
-      console.log("Created test patient:", p._id.toString());
-    }
+    // Lookup by email (NOT encrypted) so this works regardless of whether
+    // PII encryption is enabled. Always delete+recreate so encrypted fields
+    // get freshly encrypted at create time.
+    await Patient.deleteMany({ email: TEST_PATIENT.email });
+    const p = await Patient.create(TEST_PATIENT);
+    console.log("Created test patient:", p._id.toString());
 
     // ─── ADMIN ────────────────────────────────────────────────────────
     const hashed = await hashPassword(TEST_ADMIN.passwordPlain, (err) => {

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { fieldEncryption } = require("mongoose-field-encryption");
 
 const consultationsSchema = new mongoose.Schema(
   {
@@ -84,5 +85,12 @@ const consultationsSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+consultationsSchema.plugin(fieldEncryption, {
+  fields: ["notes", "AIScribeNote"],
+  secret: process.env.ENCRYPTION_KEY,
+  saltGenerator: () => process.env.ENCRYPTION_SIGNING_KEY.slice(0, 16),
+});
+
 const Consultation = new mongoose.model("Consultation", consultationsSchema);
 module.exports = Consultation;

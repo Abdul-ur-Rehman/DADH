@@ -297,8 +297,17 @@ const resendOtp = async (req, res, next) => {
     doctor.otpExpiry = expiry;
     await doctor.save();
 
-    // TODO: Integrate SMS service (Twilio or other)
-    console.log(`Resent OTP for Doctor ${doctor.phone}: ${newOtp}`);
+    // Send OTP via SMS
+    const phoneToSend = doctor.phone.startsWith("+") ? doctor.phone : "+" + doctor.phone;
+    try {
+      await sendSms({
+        to: phoneToSend,
+        body: `Your login OTP is ${newOtp}. It is valid for 5 minutes.`,
+      });
+
+    } catch (smsErr) {
+      console.error("SMS sending failed:", smsErr.message);
+    }
 
     res.status(200).json({
       state: true,

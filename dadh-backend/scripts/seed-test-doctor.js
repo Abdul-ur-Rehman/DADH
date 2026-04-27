@@ -26,15 +26,11 @@ const TEST_DOCTOR = {
     await mongoose.connect(process.env.URI);
     console.log("Connected to MongoDB");
 
-    const existing = await Doctor.findOne({ phone: TEST_DOCTOR.phone });
-    if (existing) {
-      Object.assign(existing, TEST_DOCTOR);
-      await existing.save();
-      console.log("Updated existing test doctor:", existing._id.toString());
-    } else {
-      const doc = await Doctor.create(TEST_DOCTOR);
-      console.log("Created test doctor:", doc._id.toString());
-    }
+    // Lookup by email (not encrypted on Doctor model anyway) and always
+    // delete+recreate so future encrypted fields get fresh ciphertext.
+    await Doctor.deleteMany({ email: TEST_DOCTOR.email });
+    const doc = await Doctor.create(TEST_DOCTOR);
+    console.log("Created test doctor:", doc._id.toString());
 
     console.log("\n=== LOGIN CREDENTIALS ===");
     console.log("Prescriber Number:", TEST_DOCTOR.prescriberNumber);

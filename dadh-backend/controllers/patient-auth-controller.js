@@ -253,8 +253,19 @@ const resendOtp = async (req, res, next) => {
     patient.otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
     await patient.save();
 
-    // ✅ Yahan SMS bhejna (Twilio/other API)
-    console.log("Resent OTP for Patient:", otp);
+    // Send OTP via SMS
+    const phoneToSend = patient.phone.startsWith("+")
+      ? patient.phone
+      : "+" + patient.phone;
+
+    try {
+      await sendSms({
+        to: phoneToSend,
+        body: `Your login OTP is ${otp}. It is valid for 5 minutes.`,
+      });
+    } catch (smsErr) {
+      console.error("SMS sending failed:", smsErr.message);
+    }
 
     return res.status(200).json({
       state: true,
