@@ -1,0 +1,89 @@
+/*
+ * DADH design tokens + Tailwind base layer.
+ *
+ * IMPORTANT: Tailwind's preflight CSS reset is DISABLED in tailwind.config.js
+ * to avoid breaking existing Bootstrap / Reactstrap / MUI pages. The new UI
+ * components in src/components/ui/ are written to not depend on the reset.
+ *
+ * All variables are prefixed with --dadh- to avoid colliding with any
+ * theme variables that Bootstrap, MUI or mdbreact might define.
+ */
+
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ─── DADH brand color tokens (HSL components, no hsl() wrapper) ─── */
+
+    /* Primary — deep blue, derived from the DADH logo "DIAL A HOME DOCTOR" text. */
+    --dadh-primary: 222 84% 40%;             /* ~#1E40AF */
+    --dadh-primary-foreground: 0 0% 100%;    /* white text on primary */
+
+    /* Accent / urgency — coral red, from the logo phone receiver. */
+    --dadh-destructive: 0 72% 51%;           /* ~#DC2626 */
+    --dadh-destructive-foreground: 0 0% 100%;
+
+    /* Success / health */
+    --dadh-success: 158 64% 39%;             /* ~#10B981 */
+    --dadh-success-foreground: 0 0% 100%;
+
+    /* Surfaces */
+    --dadh-background: 0 0% 100%;            /* white */
+    --dadh-foreground: 222 47% 11%;          /* near-black slate */
+
+    --dadh-card: 0 0% 100%;
+    --dadh-card-foreground: 222 47% 11%;
+
+    /* Neutrals */
+    --dadh-secondary: 210 20% 96%;           /* near-white slate */
+    --dadh-secondary-foreground: 222 47% 11%;
+
+    --dadh-muted: 210 20% 96%;
+    --dadh-muted-foreground: 215 14% 45%;    /* mid slate for helper text */
+
+    --dadh-accent: 210 20% 96%;
+    --dadh-accent-foreground: 222 47% 11%;
+
+    --dadh-border: 214 16% 90%;              /* light slate border */
+    --dadh-input: 214 16% 90%;
+    --dadh-ring: 222 84% 40%;                /* matches primary, for focus rings */
+
+    --dadh-radius: 0.5rem;
+  }
+}
+
+/*
+ * Minimal scoped reset — applied only to elements inside a .dadh-tw-root container.
+ * This gives new pages the cleanup they need without affecting legacy pages.
+ *
+ * Wrap any page using the new components in <div className="dadh-tw-root">...</div>.
+ */
+.dadh-tw-root,
+.dadh-tw-root *,
+.dadh-tw-root *::before,
+.dadh-tw-root *::after {
+  box-sizing: border-box;
+}
+
+.dadh-tw-root {
+  font-family: theme("fontFamily.sans");
+  color: hsl(var(--dadh-foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dadh-tw-root button {
+  font-family: inherit;
+}
+
+.dadh-tw-root input,
+.dadh-tw-root textarea,
+.dadh-tw-root select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}

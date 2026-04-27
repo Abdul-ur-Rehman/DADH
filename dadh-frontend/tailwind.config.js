@@ -1,0 +1,99 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  // IMPORTANT: preflight is disabled to avoid resetting the styles used by the
+  // existing Bootstrap / Reactstrap / MUI / mdbreact pages. New components in
+  // src/components/ui/ rely only on explicit utility classes, not on the reset.
+  corePlugins: {
+    preflight: false,
+  },
+
+  // Scope Tailwind to the new component locations only. We do NOT want Tailwind
+  // to scan the legacy pages because their existing class names are not Tailwind.
+  content: [
+    "./src/components/ui/**/*.{js,jsx}",
+    "./src/pages/DoctorLogin/**/*.{js,jsx}",
+    // Phase 4-6 will add more page paths here as they are migrated.
+  ],
+
+  // Add `dadh-` prefix optional? No — kept simple. Conflicts with Bootstrap class
+  // names should be rare given we scope content above.
+  theme: {
+    container: {
+      center: true,
+      padding: "1rem",
+      screens: {
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      // shadcn-style HSL CSS variable system — defined in src/styles/tailwind.css
+      colors: {
+        border: "hsl(var(--dadh-border))",
+        input: "hsl(var(--dadh-input))",
+        ring: "hsl(var(--dadh-ring))",
+        background: "hsl(var(--dadh-background))",
+        foreground: "hsl(var(--dadh-foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--dadh-primary))",
+          foreground: "hsl(var(--dadh-primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--dadh-secondary))",
+          foreground: "hsl(var(--dadh-secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--dadh-destructive))",
+          foreground: "hsl(var(--dadh-destructive-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--dadh-success))",
+          foreground: "hsl(var(--dadh-success-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--dadh-muted))",
+          foreground: "hsl(var(--dadh-muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--dadh-accent))",
+          foreground: "hsl(var(--dadh-accent-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--dadh-card))",
+          foreground: "hsl(var(--dadh-card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--dadh-radius)",
+        md: "calc(var(--dadh-radius) - 2px)",
+        sm: "calc(var(--dadh-radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+};
