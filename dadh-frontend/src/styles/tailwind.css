@@ -12,45 +12,43 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* ─── DADH brand color tokens (HSL components, no hsl() wrapper) ─── */
+:root {
+  /* ─── DADH brand color tokens (HSL components, no hsl() wrapper) ─── */
 
-    /* Primary — deep blue, derived from the DADH logo "DIAL A HOME DOCTOR" text. */
-    --dadh-primary: 222 84% 40%;             /* ~#1E40AF */
-    --dadh-primary-foreground: 0 0% 100%;    /* white text on primary */
+  /* Primary — deep blue, derived from the DADH logo "DIAL A HOME DOCTOR" text. */
+  --dadh-primary: 222 84% 40%;             /* ~#1E40AF */
+  --dadh-primary-foreground: 0 0% 100%;    /* white text on primary */
 
-    /* Accent / urgency — coral red, from the logo phone receiver. */
-    --dadh-destructive: 0 72% 51%;           /* ~#DC2626 */
-    --dadh-destructive-foreground: 0 0% 100%;
+  /* Accent / urgency — coral red, from the logo phone receiver. */
+  --dadh-destructive: 0 72% 51%;           /* ~#DC2626 */
+  --dadh-destructive-foreground: 0 0% 100%;
 
-    /* Success / health */
-    --dadh-success: 158 64% 39%;             /* ~#10B981 */
-    --dadh-success-foreground: 0 0% 100%;
+  /* Success / health */
+  --dadh-success: 158 64% 39%;             /* ~#10B981 */
+  --dadh-success-foreground: 0 0% 100%;
 
-    /* Surfaces */
-    --dadh-background: 0 0% 100%;            /* white */
-    --dadh-foreground: 222 47% 11%;          /* near-black slate */
+  /* Surfaces */
+  --dadh-background: 0 0% 100%;            /* white */
+  --dadh-foreground: 222 47% 11%;          /* near-black slate */
 
-    --dadh-card: 0 0% 100%;
-    --dadh-card-foreground: 222 47% 11%;
+  --dadh-card: 0 0% 100%;
+  --dadh-card-foreground: 222 47% 11%;
 
-    /* Neutrals */
-    --dadh-secondary: 210 20% 96%;           /* near-white slate */
-    --dadh-secondary-foreground: 222 47% 11%;
+  /* Neutrals */
+  --dadh-secondary: 210 20% 96%;           /* near-white slate */
+  --dadh-secondary-foreground: 222 47% 11%;
 
-    --dadh-muted: 210 20% 96%;
-    --dadh-muted-foreground: 215 14% 45%;    /* mid slate for helper text */
+  --dadh-muted: 210 20% 96%;
+  --dadh-muted-foreground: 215 14% 45%;    /* mid slate for helper text */
 
-    --dadh-accent: 210 20% 96%;
-    --dadh-accent-foreground: 222 47% 11%;
+  --dadh-accent: 210 20% 96%;
+  --dadh-accent-foreground: 222 47% 11%;
 
-    --dadh-border: 214 16% 90%;              /* light slate border */
-    --dadh-input: 214 16% 90%;
-    --dadh-ring: 222 84% 40%;                /* matches primary, for focus rings */
+  --dadh-border: 214 16% 90%;              /* light slate border */
+  --dadh-input: 214 16% 90%;
+  --dadh-ring: 222 84% 40%;                /* matches primary, for focus rings */
 
-    --dadh-radius: 0.5rem;
-  }
+  --dadh-radius: 0.5rem;
 }
 
 /*
