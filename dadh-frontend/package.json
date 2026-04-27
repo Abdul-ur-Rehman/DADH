@@ -58,7 +58,7 @@
     "leaflet": "^1.9.4",
     "lodash": "^4.17.24",
     "lodash.clonedeep": "^4.5.0",
-    "lucide-react": "^1.11.0",
+    "lucide-react": "0.475.0",
     "mdbreact": "^5.2.0",
     "metismenujs": "^1.4.0",
     "mkdirp": "^3.0.1",
@@ -188,6 +188,7 @@
     "eslint-config-standard-react": "^9.2.0",
     "eslint-plugin-react": "^7.20.6",
     "postcss": "^8.5.12",
+    "postcss-loader": "6",
     "prettier": "^2.1.1",
     "tailwindcss": "3"
   },

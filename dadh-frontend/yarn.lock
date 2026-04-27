@@ -5340,7 +5340,7 @@ __metadata:
     leaflet: "npm:^1.9.4"
     lodash: "npm:^4.17.24"
     lodash.clonedeep: "npm:^4.5.0"
-    lucide-react: "npm:^1.11.0"
+    lucide-react: "npm:0.475.0"
     mdbreact: "npm:^5.2.0"
     metismenujs: "npm:^1.4.0"
     mkdirp: "npm:^3.0.1"
@@ -5348,6 +5348,7 @@ __metadata:
     moment-timezone: "npm:^0.5.43"
     nouislider-react: "npm:^3.4.1"
     postcss: "npm:^8.5.12"
+    postcss-loader: "npm:6"
     prettier: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
     react: "npm:^18.2.0"
@@ -12436,12 +12437,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "lucide-react@npm:1.11.0"
+"lucide-react@npm:0.475.0":
+  version: 0.475.0
+  resolution: "lucide-react@npm:0.475.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/2a2b6416eb89aea2bd59fa0a513d59a46090cd37c55633414ffadb86e4c7bba9dbd7991c9681fc1e879f565c885aaf5938921ab093d7f7c5d9d8c6bbe655ef30
+  checksum: 10c0/9cb17bd4e70da4db104874b6b2e9d9c7e2be9438e9d1c0b2565df0c4d0bdd1add41b7dff3cb60840699ecbd29870c453878b42b69a7c46480def0c9370a852a9
   languageName: node
   linkType: hard
 
@@ -14130,7 +14131,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:^6.2.1":
+"postcss-loader@npm:6, postcss-loader@npm:^6.2.1":
   version: 6.2.1
   resolution: "postcss-loader@npm:6.2.1"
   dependencies:
