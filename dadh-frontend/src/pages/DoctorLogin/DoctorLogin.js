@@ -156,7 +156,7 @@ const DoctorLogin = () => {
         {/* Left panel */}
         <div
           className="hidden md:flex md:w-[52%] flex-col justify-between p-10 relative overflow-hidden"
-          style={{ background: "linear-gradient(140deg, #1E3A8A 0%, #2563EB 55%, #3B82F6 100%)" }}
+          style={{ background: "linear-gradient(140deg, #064E4E 0%, #0D7377 55%, #14B8A6 100%)" }}
         >
           {/* Decorative spinning ring */}
           <div className="absolute top-8 right-8 dadh-spin-slow opacity-10">
@@ -218,8 +218,8 @@ const DoctorLogin = () => {
             <div className="dadh-float-card2 absolute -right-6 top-0 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 shadow-lg">
               <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="#1E40AF" strokeWidth="1.5"/>
-                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="#1E40AF" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="#0D7377" strokeWidth="1.5"/>
+                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="#0D7377" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
               <div>
@@ -229,10 +229,10 @@ const DoctorLogin = () => {
             </div>
 
             <div className="dadh-float-card3 absolute -bottom-4 left-0 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 shadow-lg">
-              <div className="h-7 w-7 rounded-lg bg-blue-50 flex items-center justify-center">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="5" stroke="#2563EB" strokeWidth="1.5"/>
-                  <path d="M7 4.5V7l1.5 1.5" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round"/>
+                  <circle cx="7" cy="7" r="5" stroke="#0D7377" strokeWidth="1.5"/>
+                  <path d="M7 4.5V7l1.5 1.5" stroke="#0D7377" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
               <div>

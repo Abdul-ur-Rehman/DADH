@@ -13,40 +13,41 @@
 @tailwind utilities;
 
 :root {
-  /* ─── DADH brand color tokens (HSL components, no hsl() wrapper) ─── */
+  /* ─── DADH brand color tokens — Option B "Modern Healthcare" teal palette ─── */
 
-  /* Primary — deep blue, derived from the DADH logo "DIAL A HOME DOCTOR" text. */
-  --dadh-primary: 222 84% 40%;             /* ~#1E40AF */
-  --dadh-primary-foreground: 0 0% 100%;    /* white text on primary */
+  /* Primary — dark teal #0D7377 */
+  --dadh-primary: 182 80% 26%;
+  --dadh-primary-foreground: 0 0% 100%;
 
-  /* Accent / urgency — coral red, from the logo phone receiver. */
-  --dadh-destructive: 0 72% 51%;           /* ~#DC2626 */
+  /* Urgency — red #EF4444 (logo phone receiver) */
+  --dadh-destructive: 0 84% 60%;
   --dadh-destructive-foreground: 0 0% 100%;
 
-  /* Success / health */
-  --dadh-success: 158 64% 39%;             /* ~#10B981 */
+  /* Success / health — green #22C55E */
+  --dadh-success: 142 70% 45%;
   --dadh-success-foreground: 0 0% 100%;
 
   /* Surfaces */
-  --dadh-background: 0 0% 100%;            /* white */
-  --dadh-foreground: 222 47% 11%;          /* near-black slate */
+  --dadh-background: 166 60% 99%;          /* #FAFFFE — off-white with teal breath */
+  --dadh-foreground: 200 15% 12%;          /* near-black, slight cool tone */
 
   --dadh-card: 0 0% 100%;
-  --dadh-card-foreground: 222 47% 11%;
+  --dadh-card-foreground: 200 15% 12%;
 
-  /* Neutrals */
-  --dadh-secondary: 210 20% 96%;           /* near-white slate */
-  --dadh-secondary-foreground: 222 47% 11%;
+  /* Neutrals — teal-tinted */
+  --dadh-secondary: 166 30% 94%;
+  --dadh-secondary-foreground: 182 50% 20%;
 
-  --dadh-muted: 210 20% 96%;
-  --dadh-muted-foreground: 215 14% 45%;    /* mid slate for helper text */
+  --dadh-muted: 166 25% 94%;               /* #F0FDFA-ish teal surface */
+  --dadh-muted-foreground: 180 10% 45%;
 
-  --dadh-accent: 210 20% 96%;
-  --dadh-accent-foreground: 222 47% 11%;
+  /* Accent — bright teal #14B8A6 (hover states, ghost buttons) */
+  --dadh-accent: 174 72% 40%;
+  --dadh-accent-foreground: 0 0% 100%;
 
-  --dadh-border: 214 16% 90%;              /* light slate border */
-  --dadh-input: 214 16% 90%;
-  --dadh-ring: 222 84% 40%;                /* matches primary, for focus rings */
+  --dadh-border: 166 20% 88%;              /* light teal-tinted border */
+  --dadh-input: 166 20% 88%;
+  --dadh-ring: 182 80% 26%;               /* matches primary */
 
   --dadh-radius: 0.5rem;
 }
