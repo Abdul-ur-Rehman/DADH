@@ -3,11 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "store/auth";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { app } from "../../store/auth/firebase";
-import Button from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import FormField from "../../components/ui/FormField";
 import logoDark from "../../assets/images/logo-dark.png";
-import logoLight from "../../assets/images/logo-light.png";
 
 /* ── inline keyframes so we don't need a separate CSS file ── */
 const STYLES = `
@@ -139,7 +135,7 @@ const DoctorLogin = () => {
       <header className="flex items-center gap-3 px-6 h-16 border-b border-border bg-white shadow-sm shrink-0">
         <img src={logoDark} alt="DADH logo" className="h-9 w-auto" />
         <div className="flex flex-col leading-tight">
-          <span className="text-sm font-bold text-primary tracking-wide">DIAL A HOME DOCTOR</span>
+          <span className="text-sm font-bold tracking-wide" style={{ color: "#111E1F" }}>DIAL A HOME DOCTOR</span>
           <span className="text-xs text-muted-foreground">Doctor Portal</span>
         </div>
         <div className="ml-auto">
@@ -155,148 +151,149 @@ const DoctorLogin = () => {
 
         {/* Left panel */}
         <div
-          className="hidden md:flex md:w-[52%] flex-col justify-between p-10 relative overflow-hidden"
-          style={{ background: "linear-gradient(140deg, #064E4E 0%, #0D7377 55%, #14B8A6 100%)" }}
+          className="hidden md:flex md:w-[46%] flex-col items-center justify-center p-10 relative overflow-hidden"
+          style={{ background: "linear-gradient(145deg, #053F42 0%, #0D7377 55%, #14B8A6 100%)" }}
         >
-          {/* Decorative spinning ring */}
-          <div className="absolute top-8 right-8 dadh-spin-slow opacity-10">
-            <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
-              <circle cx="100" cy="100" r="90" stroke="white" strokeWidth="2" strokeDasharray="12 8"/>
-            </svg>
-          </div>
-          <div className="absolute bottom-16 left-6 dadh-spin-slow opacity-10" style={{animationDirection:"reverse"}}>
-            <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
-              <circle cx="70" cy="70" r="60" stroke="white" strokeWidth="2" strokeDasharray="8 6"/>
-            </svg>
+          {/* Decorative background circles */}
+          <div style={{ position: "absolute", width: 380, height: 380, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.06)", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+          <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.08)", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+
+          {/* Hero icon with pulse ring */}
+          <div style={{ position: "relative", marginBottom: 32, animation: "dadh-float 3.5s ease-in-out infinite" }}>
+            <div
+              style={{
+                position: "absolute",
+                inset: -12,
+                borderRadius: "50%",
+                border: "2px solid rgba(255,255,255,0.35)",
+                animation: "dadh-pulse-ring 2s ease-out infinite",
+              }}
+            />
+            <div
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(4px)",
+                border: "1px solid rgba(255,255,255,0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 44,
+              }}
+            >
+              👨‍⚕️
+            </div>
           </div>
 
-          {/* Brand */}
-          <div className="relative z-10 dadh-fade-up-1">
-            <div className="text-3xl font-extrabold text-white leading-tight tracking-tight">
-              DIAL A HOME<br />DOCTOR
-            </div>
-            <p className="mt-3 text-blue-100 text-base leading-relaxed max-w-xs">
-              Australia&rsquo;s trusted after-hours home visiting medical service.
+          {/* Headline */}
+          <div style={{ textAlign: "center", marginBottom: 32, animation: "dadh-fade-up 0.7s ease both" }}>
+            <h2 style={{ color: "#fff", fontWeight: 800, fontSize: 26, margin: "0 0 8px", lineHeight: 1.25 }}>
+              Your Patients Need You
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 14, margin: 0, lineHeight: 1.6, maxWidth: 280 }}>
+              Australia's trusted after-hours home visiting medical service — secure, fast, and always available.
             </p>
           </div>
 
-          {/* Animated illustration */}
-          <div className="relative z-10 flex justify-center my-4">
-            {/* Pulse rings */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="dadh-pulse-ring h-44 w-44 rounded-full border-2 border-white/30" />
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center" style={{animationDelay:"1.1s"}}>
-              <div className="dadh-pulse-ring h-36 w-36 rounded-full border-2 border-white/20" />
-            </div>
-
-            {/* Central doctor icon */}
-            <div className="dadh-float relative z-10 flex h-32 w-32 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/30 shadow-2xl">
-              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Doctor figure */}
-                <circle cx="32" cy="16" r="10" fill="white" opacity="0.9"/>
-                <path d="M14 52 C14 38 50 38 50 52" fill="white" opacity="0.9"/>
-                {/* Stethoscope */}
-                <path d="M24 30 Q20 36 22 42 Q24 48 30 48 Q36 48 38 42 Q40 36 36 30" stroke="white" strokeWidth="2.5" fill="none" opacity="0.7" strokeLinecap="round"/>
-                <circle cx="30" cy="49" r="3" fill="white" opacity="0.7"/>
-              </svg>
-            </div>
-
-            {/* Floating mini-cards */}
-            <div className="dadh-float-card1 absolute -left-4 top-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 shadow-lg">
-              <div className="h-7 w-7 rounded-lg bg-success/15 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7l3.5 3.5L12 3" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-800">Verified Portal</p>
-                <p className="text-[10px] text-gray-400">Secure access</p>
-              </div>
-            </div>
-
-            <div className="dadh-float-card2 absolute -right-6 top-0 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 shadow-lg">
-              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="#0D7377" strokeWidth="1.5"/>
-                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="#0D7377" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-800">SMS 2FA</p>
-                <p className="text-[10px] text-gray-400">Always protected</p>
-              </div>
-            </div>
-
-            <div className="dadh-float-card3 absolute -bottom-4 left-0 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 shadow-lg">
-              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="5" stroke="#0D7377" strokeWidth="1.5"/>
-                  <path d="M7 4.5V7l1.5 1.5" stroke="#0D7377" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-800">Real-time Queue</p>
-                <p className="text-[10px] text-gray-400">Live patient updates</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Feature bullets */}
-          <div className="relative z-10 space-y-3 dadh-fade-up-2">
+          {/* Feature cards */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 300 }}>
             {[
-              "Secure, encrypted doctor portal",
-              "Two-factor SMS authentication",
-              "Real-time patient visit management",
-              "AI-assisted medical scribing",
-            ].map((text) => (
-              <div key={text} className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <path d="M1.5 5l2.5 2.5 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+              { icon: "✅", label: "Verified Portal", sub: "Secure doctor access" },
+              { icon: "🔐", label: "SMS 2FA", sub: "Two-factor authentication" },
+              { icon: "🕐", label: "Real-time Queue", sub: "Live patient updates" },
+              { icon: "🤖", label: "AI Medical Scribe", sub: "Auto-generated notes" },
+            ].map((card, i) => (
+              <div
+                key={card.label}
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  backdropFilter: "blur(4px)",
+                  animation: `dadh-fade-up ${0.5 + i * 0.15}s ease both`,
+                }}
+              >
+                <span style={{ fontSize: 22, flexShrink: 0 }}>{card.icon}</span>
+                <div>
+                  <div style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>{card.label}</div>
+                  <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>{card.sub}</div>
                 </div>
-                <span className="text-sm text-blue-50">{text}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Right panel — form */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 bg-gray-50">
-          {/* Mobile logo */}
-          <div className="md:hidden mb-8 text-center">
-            <img src={logoLight} alt="DADH logo" className="h-10 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Doctor Portal</p>
-          </div>
-
+        <div className="flex-1 flex items-center justify-center px-6 py-10 bg-gray-50">
           <div className="w-full max-w-sm dadh-fade-up-3">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-foreground">Doctor sign in</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Enter your credentials to access the portal.
-              </p>
-            </div>
 
-            {apiError && (
-              <div className="mb-5 flex items-start gap-3 rounded-lg bg-destructive/8 border border-destructive/20 px-4 py-3">
-                <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="6.5" stroke="#DC2626" strokeWidth="1.5"/>
-                  <path d="M8 5v3.5M8 10.5v.5" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <p className="text-sm text-destructive">{apiError}</p>
-              </div>
-            )}
-
-            <div className="bg-white rounded-2xl shadow-sm border border-border p-7 dadh-fade-up-4">
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <FormField
-                  label="Prescriber Number"
-                  htmlFor="prescriberNumber"
-                  error={errors.prescriberNumber}
-                  helper="3-digit AHPRA registration number"
+            {/* Card */}
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                border: "1px solid #E2ECF0",
+                padding: "40px 36px",
+                boxShadow: "0 4px 24px rgba(13,115,119,0.08)",
+              }}
+            >
+              {/* Avatar + heading */}
+              <div style={{ textAlign: "center", marginBottom: 28 }}>
+                <div
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: "50%",
+                    background: "#F0FDFA",
+                    border: "1px solid #D1E8E8",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 24,
+                    margin: "0 auto 14px",
+                  }}
                 >
-                  <Input
+                  👨‍⚕️
+                </div>
+                <h1 style={{ fontWeight: 800, fontSize: 22, color: "#111E1F", margin: "0 0 6px" }}>
+                  Doctor Sign In
+                </h1>
+                <p style={{ fontSize: 13, color: "#4B7172", margin: 0 }}>
+                  Enter your credentials to access the portal
+                </p>
+              </div>
+
+              {/* API error */}
+              {apiError && (
+                <div
+                  style={{
+                    background: "#FEF2F2",
+                    border: "1px solid #FECACA",
+                    borderRadius: 8,
+                    padding: "10px 14px",
+                    color: "#B91C1C",
+                    fontSize: 13,
+                    marginBottom: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  ⚠️ {apiError}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                {/* Prescriber Number */}
+                <div>
+                  <label style={fieldLabel}>Prescriber Number</label>
+                  <input
                     id="prescriberNumber"
                     name="prescriberNumber"
                     type="text"
@@ -305,17 +302,18 @@ const DoctorLogin = () => {
                     value={formData.prescriberNumber}
                     onChange={handleChange}
                     placeholder="e.g. 123"
-                    className="mt-1.5 bg-gray-50 focus:bg-white transition-colors"
+                    style={fieldInput(!!errors.prescriberNumber)}
                   />
-                </FormField>
+                  {errors.prescriberNumber
+                    ? <p style={fieldErr}>{errors.prescriberNumber}</p>
+                    : <p style={fieldHint}>3-digit AHPRA registration number</p>
+                  }
+                </div>
 
-                <FormField
-                  label="Phone Number"
-                  htmlFor="doctorPhone"
-                  error={errors.doctorPhone}
-                  helper="Mobile number registered with DADH"
-                >
-                  <Input
+                {/* Phone Number */}
+                <div>
+                  <label style={fieldLabel}>Phone Number</label>
+                  <input
                     id="doctorPhone"
                     name="doctorPhone"
                     type="text"
@@ -324,41 +322,108 @@ const DoctorLogin = () => {
                     value={formData.doctorPhone}
                     onChange={handleChange}
                     placeholder="e.g. 0412345678"
-                    className="mt-1.5 bg-gray-50 focus:bg-white transition-colors"
+                    style={fieldInput(!!errors.doctorPhone)}
                   />
-                </FormField>
+                  {errors.doctorPhone
+                    ? <p style={fieldErr}>{errors.doctorPhone}</p>
+                    : <p style={fieldHint}>Mobile number registered with DADH</p>
+                  }
+                </div>
 
-                <Button
+                {/* Submit */}
+                <button
                   type="submit"
-                  className="w-full h-11 text-base font-semibold shadow-sm"
                   disabled={loading}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    background: loading ? "#4B7172" : "#0D7377",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 15,
+                    cursor: loading ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    transition: "background 0.2s",
+                    marginTop: 4,
+                  }}
+                  onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "#0a5f62"; }}
+                  onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = "#0D7377"; }}
                 >
                   {loading ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    <>
+                      <svg style={{ animation: "dadh-spin-slow 0.8s linear infinite" }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
+                        <path d="M14 8a6 6 0 01-6 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
                       </svg>
-                      Verifying…
-                    </span>
-                  ) : "Sign in"}
-                </Button>
+                      Verifying...
+                    </>
+                  ) : "Sign In →"}
+                </button>
               </form>
+
+              {/* Contact link */}
+              <p style={{ textAlign: "center", marginTop: 22, fontSize: 13, color: "#4B7172", marginBottom: 0 }}>
+                Having trouble?{" "}
+                <a
+                  href="mailto:admin@dialahomee.com.au"
+                  style={{ color: "#0D7377", fontWeight: 700, textDecoration: "none" }}
+                >
+                  Contact DADH admin
+                </a>
+              </p>
             </div>
 
-            <p className="mt-5 text-center text-xs text-muted-foreground">
-              Having trouble?{" "}
-              <a href="mailto:admin@dialahomee.com.au" className="text-primary hover:underline font-medium">
-                Contact DADH admin
-              </a>
-            </p>
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "14px 24px",
+          borderTop: "1px solid #D1E8E8",
+          fontSize: 12,
+          color: "#4B7172",
+          background: "#fff",
+          flexShrink: 0,
+        }}
+      >
+        © {new Date().getFullYear()} Dial A Home Doctor · After-Hours Telehealth · Australia
+      </footer>
 
       <div id="recaptcha-container" />
     </div>
   );
 };
+
+const fieldLabel = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#374151",
+  marginBottom: 6,
+};
+
+const fieldInput = (hasError) => ({
+  width: "100%",
+  padding: "10px 13px",
+  border: `1.5px solid ${hasError ? "#EF4444" : "#D1E8E8"}`,
+  borderRadius: 8,
+  fontSize: 14,
+  color: "#111E1F",
+  outline: "none",
+  background: "#fff",
+  boxSizing: "border-box",
+  transition: "border-color 0.15s",
+});
+
+const fieldErr  = { fontSize: 12, color: "#EF4444", margin: "5px 0 0" };
+const fieldHint = { fontSize: 11, color: "#4B7172", margin: "5px 0 0" };
 
 export default DoctorLogin;

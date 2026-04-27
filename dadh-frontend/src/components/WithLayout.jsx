@@ -1,21 +1,15 @@
 import React from "react";
 import AdminLayout from "./AdminLayout/index";
 import DoctorLayout from "./DoctorLayout";
-import PatientLayout from "./PatientLayout";
-// import UserLayout from "../layouts/UserLayout";
-// import GuestLayout from "../layouts/GuestLayout";
+import PatientAppLayout from "./PatientLayout/PatientAppLayout";
 
 const WithLayout = ({ children }) => {
-  const userRole = localStorage.getItem("userRole"); // or get from Redux/Context
+  const userRole = localStorage.getItem("userRole");
 
-  if (userRole === "admin") {
-    return <AdminLayout>{children}</AdminLayout>;
- } else if (userRole === "doctor") {
-     return <DoctorLayout>{children}</DoctorLayout>;
-   }
-   else if(userRole === "patient"){
-    return <PatientLayout>{children}</PatientLayout>;
-  }
+  if (userRole === "admin") return <AdminLayout>{children}</AdminLayout>;
+  if (userRole === "doctor") return <DoctorLayout>{children}</DoctorLayout>;
+  if (userRole === "patient") return <PatientAppLayout>{children}</PatientAppLayout>;
+  return <>{children}</>;
 };
 
 export default WithLayout;

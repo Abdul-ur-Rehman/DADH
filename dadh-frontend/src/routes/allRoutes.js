@@ -146,7 +146,7 @@ import PatientInboxPage from "pages/PatientInboxPage/PatientInboxPage";
 
 // import TRTCChat from "pages/DoctorHome/TRTCChat";
 import PatientLoginPage from "pages/PatientLogin/PatientLoginPage";
-// import PatientHistoryPage from "pages/PatientHistoryPage/PatientHistoryPage";
+import PatientHistoryFull from "pages/PatientHistoryPage/PatientHistoryFull";
 import DoctorVideoCallPage from "pages/DoctorVideoCall/DoctorVideoCallPage";
 import DoctorAudioCallPage from "pages/DoctorAudioCall/DoctorAudioCallPage";
 import PatientProfilePage from "pages/PatientProfileAccount/PatientProfilePage";
@@ -238,8 +238,8 @@ const userRoutes = [
   { path: "/patient", component: <PatientHome />, allowedRoles: ['patient'] },
   { path: "/patient/inbox", component: <PatientInboxPage />, allowedRoles: ['patient'] },
   { path: "/patient/detailform", component: <PatientDetailForm />, allowedRoles: ['patient'] },
-  // { path: "/patient/patientHistory", component: <PatientHistoryPage />, allowedRoles: ['patient'] },
-  { path: "/patient/patientprofile", component: <PatientProfilePage />, allowedRoles: ['patient'] },
+  { path: "/patient/history", component: <PatientHistoryFull />, allowedRoles: ['patient'] },
+  { path: "/patient/profile", component: <PatientProfilePage />, allowedRoles: ['patient'] },
   // { path: "/patient/consulthistory", component: <PatientConsultHistoryPage />, allowedRoles: ['patient'] },
 
 

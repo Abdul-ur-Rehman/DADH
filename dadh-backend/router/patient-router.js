@@ -1,7 +1,22 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
 const admin = require("../firebase/firebase-admin");
 const patientController = require("../controllers/patient-auth-controller");
+
+const photoStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, "../uploads")),
+  filename: (req, file, cb) => cb(null, `patient-photo-${Date.now()}${path.extname(file.originalname)}`),
+});
+const uploadPhoto = multer({
+  storage: photoStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed"));
+  },
+});
 const validator = require("../middlewares/validator-middleware");
 const signupSchema = require("../validator/patient-signup-validator");
 const loginSchema = require("../validator/patient-login-validator");
@@ -13,6 +28,7 @@ router.post("/register", registerLimiter, validator(signupSchema), patientContro
 router.post("/getAllFamilyMembers", patientController.getAllFamilyMembers);
 router.get("/patients", patientController.getAllPatients);
 router.patch("/update/:patientId", patientController.updatePatientById);
+router.patch("/upload-photo/:patientId", uploadPhoto.single("profileImage"), patientController.uploadProfilePhoto);
 router.get("/profile/:id", patientController.getPatientById);
 router.post("/login", authLimiter, validator(loginSchema), patientController.login);
 router.get("/getOneById/:id", patientController.getOne);

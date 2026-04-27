@@ -1,11 +1,6 @@
 import React from "react";
 import PatientProfile from './PatientProfile';
-const PatientProfilePage = () => {
-  return (
-    <div>
-      <PatientProfile  />
-    </div>
-  );
-};
 
-export default  PatientProfilePage;
+const PatientProfilePage = () => <PatientProfile />;
+
+export default PatientProfilePage;

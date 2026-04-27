@@ -547,6 +547,27 @@ const setOffline = async (req, res, next) => {
     next(err);
   }
 };
+const uploadProfilePhoto = async (req, res, next) => {
+  try {
+    const { patientId } = req.params;
+    if (!req.file) {
+      return res.status(400).json({ state: false, message: "No file uploaded" });
+    }
+    const imageUrl = `/uploads/${req.file.filename}`;
+    const patient = await Patient.findByIdAndUpdate(
+      patientId,
+      { profileImage: imageUrl },
+      { new: true }
+    );
+    if (!patient) {
+      return res.status(404).json({ state: false, message: "Patient not found" });
+    }
+    res.status(200).json({ state: true, message: "Profile photo updated", data: patient });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getPatientById,
   updatePatientById,
@@ -565,4 +586,5 @@ module.exports = {
   toggleActive,
   verifyOtp,
   resendOtp,
+  uploadProfilePhoto,
 };

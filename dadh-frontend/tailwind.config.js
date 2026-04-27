@@ -11,8 +11,11 @@ module.exports = {
   // to scan the legacy pages because their existing class names are not Tailwind.
   content: [
     "./src/components/ui/**/*.{js,jsx}",
+    "./src/components/PatientLayout/PatientAppLayout.jsx",
     "./src/pages/DoctorLogin/**/*.{js,jsx}",
-    // Phase 4-6 will add more page paths here as they are migrated.
+    "./src/pages/PatientHome/**/*.{js,jsx}",
+    "./src/pages/PatientLogin/**/*.{js,jsx}",
+    "./src/pages/PatientHistoryPage/**/*.{js,jsx}",
   ],
 
   // Add `dadh-` prefix optional? No — kept simple. Conflicts with Bootstrap class

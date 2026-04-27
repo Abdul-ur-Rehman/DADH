@@ -97,6 +97,10 @@ const patientSchema = new mongoose.Schema(
       enum: [0, 1],
       default: 1, // 1 = active, 0 = inactive
     },
+    profileImage: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
