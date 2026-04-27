@@ -30,40 +30,41 @@ module.exports = {
       },
     },
     extend: {
-      // shadcn-style HSL CSS variable system — defined in src/styles/tailwind.css
+      // DADH "Modern Healthcare" teal palette — Option B
+      // To change the palette: update hex values here AND the --dadh-* vars in tailwind.css
       colors: {
-        border: "hsl(var(--dadh-border))",
-        input: "hsl(var(--dadh-input))",
-        ring: "hsl(var(--dadh-ring))",
-        background: "hsl(var(--dadh-background))",
-        foreground: "hsl(var(--dadh-foreground))",
+        border:     "#D1E8E8",
+        input:      "#D1E8E8",
+        ring:       "#0D7377",
+        background: "#FAFFFE",
+        foreground: "#111E1F",
         primary: {
-          DEFAULT: "hsl(var(--dadh-primary))",
-          foreground: "hsl(var(--dadh-primary-foreground))",
+          DEFAULT:    "#0D7377",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "hsl(var(--dadh-secondary))",
-          foreground: "hsl(var(--dadh-secondary-foreground))",
+          DEFAULT:    "#E6F4F4",
+          foreground: "#0D4F52",
         },
         destructive: {
-          DEFAULT: "hsl(var(--dadh-destructive))",
-          foreground: "hsl(var(--dadh-destructive-foreground))",
+          DEFAULT:    "#EF4444",
+          foreground: "#FFFFFF",
         },
         success: {
-          DEFAULT: "hsl(var(--dadh-success))",
-          foreground: "hsl(var(--dadh-success-foreground))",
+          DEFAULT:    "#22C55E",
+          foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "hsl(var(--dadh-muted))",
-          foreground: "hsl(var(--dadh-muted-foreground))",
+          DEFAULT:    "#E6F4F4",
+          foreground: "#4B7172",
         },
         accent: {
-          DEFAULT: "hsl(var(--dadh-accent))",
-          foreground: "hsl(var(--dadh-accent-foreground))",
+          DEFAULT:    "#14B8A6",
+          foreground: "#FFFFFF",
         },
         card: {
-          DEFAULT: "hsl(var(--dadh-card))",
-          foreground: "hsl(var(--dadh-card-foreground))",
+          DEFAULT:    "#FFFFFF",
+          foreground: "#111E1F",
         },
       },
       borderRadius: {
