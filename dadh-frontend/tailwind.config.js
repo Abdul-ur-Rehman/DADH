@@ -16,6 +16,7 @@ module.exports = {
     "./src/pages/PatientHome/**/*.{js,jsx}",
     "./src/pages/PatientLogin/**/*.{js,jsx}",
     "./src/pages/PatientHistoryPage/**/*.{js,jsx}",
+    "./src/pages/PatientHistory/**/*.{js,jsx}",
   ],
 
   // Add `dadh-` prefix optional? No — kept simple. Conflicts with Bootstrap class

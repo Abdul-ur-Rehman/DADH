@@ -1,14 +1,15 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import AdminLayout from "./AdminLayout/index";
 import DoctorLayout from "./DoctorLayout";
 import PatientAppLayout from "./PatientLayout/PatientAppLayout";
 
 const WithLayout = ({ children }) => {
-  const userRole = localStorage.getItem("userRole");
+  const { pathname } = useLocation();
 
-  if (userRole === "admin") return <AdminLayout>{children}</AdminLayout>;
-  if (userRole === "doctor") return <DoctorLayout>{children}</DoctorLayout>;
-  if (userRole === "patient") return <PatientAppLayout>{children}</PatientAppLayout>;
+  if (pathname.startsWith("/admin")) return <AdminLayout>{children}</AdminLayout>;
+  if (pathname.startsWith("/doctor")) return <DoctorLayout>{children}</DoctorLayout>;
+  if (pathname.startsWith("/patient")) return <PatientAppLayout>{children}</PatientAppLayout>;
   return <>{children}</>;
 };
 

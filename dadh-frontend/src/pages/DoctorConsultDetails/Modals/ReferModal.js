@@ -190,7 +190,7 @@ const handleRefer = async () => {
 
     // 2️⃣ Step: End consultation after referral succeeds
     const localData = JSON.parse(localStorage.getItem("data"));
-    const patientData = JSON.parse(localStorage.getItem("patientData")); // ✅ fetch patient
+    const patientData = JSON.parse(localStorage.getItem("consultPatientData")); // fetch patient being consulted
 
     const doctorId = localData?.data?._id;
     const patientId = patientData?._id;

@@ -25,6 +25,7 @@ const SidebarContent = (props) => {
   const Ref = useRef();
 
   const [doctors, setDoctors] = useState([]);
+  const [certPendingCount, setCertPendingCount] = useState(0);
 
   const activateParentDropdown = useCallback((item) => {
     item.classList.add("active");
@@ -72,6 +73,25 @@ const SidebarContent = (props) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     activeMenu();
   }, [location.pathname, activeMenu]);
+
+  useEffect(() => {
+    const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api";
+    const fetchCertPending = async () => {
+      try {
+        const doctorId = JSON.parse(localStorage.getItem("data"))?.data?._id;
+        if (!doctorId) return;
+        const res = await fetch(`${BASE_URL}/consultations/incompleteBillings/${doctorId}`);
+        const json = await res.json();
+        const count = (json.data || []).filter(
+          (c) => c.requestedCertificate?.length > 0 && !c.certificates?.length
+        ).length;
+        setCertPendingCount(count);
+      } catch {}
+    };
+    fetchCertPending();
+    const id = setInterval(fetchCertPending, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -136,6 +156,13 @@ const handleLogout = () => {
               <Link to="/doctor/consultHistory" className="waves-effect">
                 <UserCheck size={18} className="me-2" />
                 <span>{props.t("Consult History")}</span>
+                {certPendingCount > 0 && (
+                  <span className="badge rounded-pill float-end" style={{
+                    background: "#fb8c00", color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 18,
+                  }}>
+                    {certPendingCount}
+                  </span>
+                )}
               </Link>
             </li>
 

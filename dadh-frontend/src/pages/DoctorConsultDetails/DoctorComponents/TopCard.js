@@ -130,7 +130,9 @@ const handleStartAudioCall = () => {
     const activeConsultationId = storedData?.data?.activeConsultationId;
     const patientId = patient?._id;
 
-    if (!activeConsultationId || !doctorId || !patientId) return;
+    if (!activeConsultationId) { alert("Missing consultation ID — cannot stop."); return; }
+    if (!doctorId) { alert("Missing doctor ID — cannot stop."); return; }
+    if (!patientId) { alert("Missing patient ID — cannot stop."); return; }
 
     try {
       const res = await fetch(
@@ -144,14 +146,15 @@ const handleStartAudioCall = () => {
       const result = await res.json();
 
       if (result.state) {
-        // Optional: fetch updated consultations
         localStorage.removeItem("patientId");
-        localStorage.removeItem("patientData");
-        setIsConsultationCompleted(true); // ✅ show certify + bill buttons
+        localStorage.removeItem("consultPatientData");
+        setIsConsultationCompleted(true);
       } else {
+        alert("Could not stop consultation: " + (result.message || "Unknown error"));
         console.error("Consultation not ended properly", result.message);
       }
     } catch (err) {
+      alert("Network error while stopping consultation: " + err.message);
       console.error("Error ending consultation:", err);
     }
   };
@@ -261,6 +264,12 @@ const handleStartAudioCall = () => {
 
         <Divider style={{ margin: "10px 0" }} />
 
+        {isConsultationCompleted && (
+          <div className="alert alert-success py-2 mb-2 text-center" style={{ fontSize: 13 }}>
+            Consultation stopped. Please certify and/or bill before leaving.
+          </div>
+        )}
+
         <div className="d-flex justify-content-center flex-wrap gap-2 mb-3">
           {allButtons.map((button, index) => (
             <button
@@ -272,6 +281,15 @@ const handleStartAudioCall = () => {
               <span>{button.label}</span>
             </button>
           ))}
+          {isConsultationCompleted && (
+            <button
+              className="btn btn-secondary btn-sm d-flex align-items-center"
+              onClick={() => navigate("/doctor")}
+            >
+              <i className="fas fa-home me-1"></i>
+              <span>Go to Dashboard</span>
+            </button>
+          )}
         </div>
 
         <div className="d-flex justify-content-center gap-3 mb-3">

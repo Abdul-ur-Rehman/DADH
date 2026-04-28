@@ -5,11 +5,12 @@ import { Container, Typography, Button, CircularProgress, Paper } from '@mui/mat
 import "./VideoCall.css"; // External CSS
 
 const DoctorVideoCallPage = () => {
+  const REACT_APP_BACKEND_URL = "http://localhost:5001/api";
   const SDKAppID = 20025898;
   const SDKSecretKey = 'cc1761e049018cad20a8b11f2214e68460372e9b9d3f9a5c2acada24fb814465';
 
   const callerUserID = localStorage.getItem('sendBirdUserId') || null;
-  const patientData = JSON.parse(localStorage.getItem('patientData')) || null;
+  const patientData = JSON.parse(localStorage.getItem('consultPatientData')) || null;
   const calleeUserID = patientData?._id || null;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

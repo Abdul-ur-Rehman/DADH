@@ -8,6 +8,13 @@ const STATUS = {
     color: "#0D7377",
     border: "#D1E8E8",
   },
+  accepted: {
+    label: "Doctor Accepted",
+    dot: "#22C55E",
+    bg: "#F0FDF4",
+    color: "#15803D",
+    border: "#BBF7D0",
+  },
   queued: {
     label: "In Queue",
     dot: "#F59E0B",
@@ -18,7 +25,9 @@ const STATUS = {
 }
 
 function resolveStatus(c) {
-  return c.isCalling && !c.isCompleted ? STATUS.calling : STATUS.queued
+  if (c.isCalling && !c.isCompleted) return STATUS.calling
+  if (c.doctorId) return STATUS.accepted
+  return STATUS.queued
 }
 
 export default function ActiveConsultCard({ consultation, onAnswerCall }) {
@@ -89,7 +98,7 @@ export default function ActiveConsultCard({ consultation, onAnswerCall }) {
           <p style={{ fontWeight: 700, color: "#111E1F", margin: 0, fontSize: 16, lineHeight: 1.3 }}>
             {consultation.doctorId
               ? `Dr. ${consultation.doctorInfo?.name || "Loading..."}`
-              : "Waiting for doctor assignment"}
+              : "Waiting for a doctor"}
           </p>
           <p style={{ color: "#4B7172", margin: "3px 0 0", fontSize: 13 }}>
             {consultation.categoryName || consultation.consultationCategory || "General Consultation"}

@@ -22,6 +22,7 @@ router.patch("/referDoctor", consultationsController.referDoctor);
 router.patch("/investigation/add", consultationsController.addInvestigateion);
 router.patch("/certification/add", consultationsController.addCertification);
 router.get("/patientCertificate/:consultationId",consultationsController.getCertifications);
+router.patch("/request-certificate/:id", consultationsController.requestCertificate);
 router.patch("/prescribtion/add/:id", consultationsController.addPrescribtion);
 router.patch("/pause/:id", consultationsController.pauseConsultation);
 router.patch("/requeuePatient", consultationsController.requeuePatient);

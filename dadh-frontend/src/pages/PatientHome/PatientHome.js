@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useCallback } from "react"
 import IncomingCallBanner from "./IncomingCallBanner"
 import ActiveConsultCard from "./ActiveConsultCard"
 import RecentHistoryTable from "./RecentHistoryTable"
-import CertificateModal from "./CertificateModal"
 import PatientCallPage from "pages/PatientCall/PatientCallPage"
 
 const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"
@@ -33,13 +32,6 @@ function PatientHome() {
     callType: null,
   })
   const [callModalOpen, setCallModalOpen] = useState(false)
-  const [certModal, setCertModal] = useState({
-    show: false,
-    certificate: null,
-    doctorInfo: {},
-    patientName,
-    patientDOB,
-  })
 
   // Ref tracks active call consultation to avoid stale closure in polling interval
   const callConsultIdRef = useRef(null)
@@ -59,7 +51,10 @@ function PatientHome() {
   }, [])
 
   const fetchData = useCallback(async () => {
-    if (!patientId) return
+    if (!patientId) {
+      setLoading(false)
+      return
+    }
 
     try {
       const res = await fetchJSON(
@@ -144,7 +139,7 @@ function PatientHome() {
 
   useEffect(() => {
     fetchData()
-    const id = setInterval(fetchData, 10000)
+    const id = setInterval(fetchData, 3000)
     return () => clearInterval(id)
   }, [fetchData])
 
@@ -186,8 +181,8 @@ function PatientHome() {
   const activeConsultation = consultations.find((c) => !c.isCompleted) || null
   const recentHistory = consultations
     .filter((c) => c.isCompleted)
-    .slice(-3)
-    .reverse()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3)
 
   if (loading) {
     return (
@@ -270,17 +265,10 @@ function PatientHome() {
         </h2>
         <RecentHistoryTable
           consultations={recentHistory}
-          onViewCertificate={(cert, doctorInfo) =>
-            setCertModal({ show: true, certificate: cert, doctorInfo, patientName, patientDOB })
-          }
+          patientName={patientName}
+          patientDOB={patientDOB}
         />
       </section>
-
-      {/* Certificate modal */}
-      <CertificateModal
-        {...certModal}
-        onClose={() => setCertModal((m) => ({ ...m, show: false }))}
-      />
     </div>
   )
 }

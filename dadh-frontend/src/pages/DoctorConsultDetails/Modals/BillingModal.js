@@ -299,50 +299,23 @@ const BillingModal = ({ show, handleClose }) => {
   };
 
   const handleEndConsultation = async () => {
-    if (!activeConsultationId || !doctorId || !patientId) return;
+    if (!activeConsultationId) return;
 
     try {
-      // First: Add all selected billings to the consultation
+      // Consultation is already ended by the Stop button — just save bill codes
       for (const billing of selectedBillings) {
-        await fetch(`${REACT_APP_BACKEND_URL}/bill/add/${consultationId}`, {
+        await fetch(`${REACT_APP_BACKEND_URL}/bill/add/${activeConsultationId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bill_id: billing._id }),
         });
       }
 
-      // Then: Mark consultation as ended
-      const res = await fetch(
-        `${REACT_APP_BACKEND_URL}/billing/end/consultation/${activeConsultationId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            doctor_id: doctorId,
-            patientId: patientId,
-          }),
-        }
-      );
-      const result = await res.json();
-
-      if (result.state) {
-        const updatedRes = await fetch(
-          `${REACT_APP_BACKEND_URL}/consultations/getConsulationByPatient/${patientId}`
-        );
-        const updatedData = await updatedRes.json();
-        const updatedConsultations = updatedData?.data || [];
-
-        localStorage.setItem("patientConsultations", JSON.stringify(updatedConsultations));
-        window.dispatchEvent(new Event("storage"));
-
-        handleClose();
-        navigate("/doctor");
-        localStorage.removeItem("consultationId");
-      } else {
-        console.error("Consultation not ended properly", result.message);
-      }
+      localStorage.removeItem("consultationId");
+      handleClose();
+      navigate("/doctor");
     } catch (err) {
-      console.error("Error ending consultation:", err);
+      console.error("Error saving billing:", err);
     }
   };
 

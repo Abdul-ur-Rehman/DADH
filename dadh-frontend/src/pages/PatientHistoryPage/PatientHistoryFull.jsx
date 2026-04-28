@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react"
 import RecentHistoryTable from "../PatientHome/RecentHistoryTable"
-import CertificateModal from "../PatientHome/CertificateModal"
+import ConsultationDetailModal from "../PatientHistory/ConsultationDetailModal"
 
 const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"
 
@@ -26,13 +26,8 @@ function PatientHistoryFull() {
 
   const [consultations, setConsultations] = useState([])
   const [loading, setLoading] = useState(true)
-  const [certModal, setCertModal] = useState({
-    show: false,
-    certificate: null,
-    doctorInfo: {},
-    patientName,
-    patientDOB,
-  })
+  const [requestingId, setRequestingId] = useState(null)
+  const [detailConsult, setDetailConsult] = useState(null)
 
   const fetchJSON = useCallback(async (url, opts = {}) => {
     for (let i = 0; i < 3; i++) {
@@ -97,6 +92,25 @@ function PatientHistoryFull() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  const handleRequestCertificate = async (consultationId) => {
+    if (requestingId) return
+    setRequestingId(consultationId)
+    try {
+      const res = await fetch(`${BASE_URL}/consultations/request-certificate/${consultationId}`, { method: "PATCH" })
+      const json = await res.json()
+      if (res.ok && json.state) {
+        setConsultations((prev) =>
+          prev.map((c) =>
+            c._id === consultationId
+              ? { ...c, requestedCertificate: [{ requestedAt: new Date(), status: "pending" }] }
+              : c
+          )
+        )
+      }
+    } catch {}
+    finally { setRequestingId(null) }
+  }
+
   return (
     <div className="dadh-tw-root">
       <div style={{ marginBottom: 24 }}>
@@ -113,16 +127,21 @@ function PatientHistoryFull() {
       ) : (
         <RecentHistoryTable
           consultations={consultations}
-          onViewCertificate={(cert, doctorInfo) =>
-            setCertModal({ show: true, certificate: cert, doctorInfo, patientName, patientDOB })
-          }
+          patientName={patientName}
+          patientDOB={patientDOB}
+          onRequestCertificate={handleRequestCertificate}
+          onViewDetails={setDetailConsult}
         />
       )}
 
-      <CertificateModal
-        {...certModal}
-        onClose={() => setCertModal((m) => ({ ...m, show: false }))}
-      />
+      {detailConsult && (
+        <ConsultationDetailModal
+          consultation={detailConsult}
+          patientName={patientName}
+          patientDOB={patientDOB}
+          onClose={() => setDetailConsult(null)}
+        />
+      )}
     </div>
   )
 }

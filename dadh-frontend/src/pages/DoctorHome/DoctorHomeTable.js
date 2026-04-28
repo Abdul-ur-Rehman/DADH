@@ -515,25 +515,24 @@ const DoctorHomeTable = () => {
         (c) => c.doctorId === userId && !c.isCompleted
       );
 
-      if (activeConsult) {
-        setConsultationId(activeConsult._id);
-        const stored = JSON.parse(localStorage.getItem("data")) || {};
-        stored.data = stored.data || {};
-        stored.data.activeConsultationId = activeConsult._id;
-        localStorage.setItem("data", JSON.stringify(stored));
-      } else {
-        setConsultationId(null);
+      if (isMounted) {
+        if (activeConsult) {
+          setConsultationId(activeConsult._id);
+          const stored = JSON.parse(localStorage.getItem("data")) || {};
+          stored.data = stored.data || {};
+          stored.data.activeConsultationId = activeConsult._id;
+          localStorage.setItem("data", JSON.stringify(stored));
+        } else {
+          setConsultationId(null);
+        }
       }
     };
 
     fetchData();
 
     const interval = setInterval(() => {
-      if (isMounted) {
-        getConsultation();
-        getReferredConsultations();
-      }
-    }, 10000);
+      if (isMounted) fetchData();
+    }, 5000);
 
     return () => {
       isMounted = false;
@@ -547,22 +546,33 @@ const handleReturnToConsult = async () => {
       method: "GET",
     });
 
-    if (res.ok) {
-      const result = await res.json();
-      const data = result.data;
-
-      // ✅ Save to localStorage
-      localStorage.setItem("consultationId", data._id);
-      localStorage.setItem("patientId", data.patientId);
-      localStorage.setItem("doctorId", data.doctorId);
-
-      console.log("Data saved to localStorage");
-
-      // ✅ Navigate to details page
-      navigate(`/doctor/startConsult/${consultationId}/details`);
-    } else {
+    if (!res.ok) {
       console.error("Failed to fetch consultation data. Status:", res.status);
+      return;
     }
+
+    const result = await res.json();
+    const data = result.data;
+
+    localStorage.setItem("consultationId", data._id);
+    localStorage.setItem("patientId", data.patientId);
+    localStorage.setItem("doctorId", data.doctorId);
+
+    // Fetch and store patient data so TopCard and call pages have it
+    try {
+      const patRes = await fetch(
+        `http://localhost:5001/api/patient/auth/getOneById/${data.patientId}`,
+        { method: "GET" }
+      );
+      if (patRes.ok) {
+        const patResult = await patRes.json();
+        localStorage.setItem("consultPatientData", JSON.stringify(patResult.data));
+      }
+    } catch (e) {
+      console.error("Failed to fetch patient for consultPatientData:", e);
+    }
+
+    navigate(`/doctor/startConsult/${consultationId}/details`);
   } catch (error) {
     console.error("Failed to fetch consultation data:", error);
   }
@@ -575,26 +585,27 @@ const handleReturnToConsult = async () => {
           <div className="patient-list">
             <h5>Patients Waiting</h5>
 
-            {isConsulting && consultationId && (
-              <div className="d-flex align-center justify-content-between">
-                <p style={{ color: "red" }}> You are in consult</p>
-                {/* <Button
-                  color="primary"
-                  onClick={() =>
-                    navigate(`/doctor/startConsult/${consultationId}/details`)
-                  }
-                >
-                  Return to Consult
-                </Button> */}
-
+            {consultationId && (
+              <div className="d-flex align-center justify-content-between mb-2 p-2"
+                style={{ background: "#fff3cd", borderRadius: 8, border: "1px solid #ffc107" }}>
+                <p style={{ color: "#856404", margin: 0, fontWeight: 500 }}>
+                  You have an active consultation
+                </p>
                 <Button color="primary" onClick={handleReturnToConsult}>
                   Return to Consult
                 </Button>
               </div>
             )}
 
+            {patients.filter((p) => !p.doctorId || p.doctorId === "").length === 0 && !consultationId && (
+              <div className="text-center no-patients py-4">
+                <p className="text-muted mb-1">No patients waiting</p>
+                <small className="text-muted">New consultations will appear here automatically</small>
+              </div>
+            )}
+
             {patients
-              .filter((p) => p.doctorId === "")
+              .filter((p) => !p.doctorId || p.doctorId === "")
               .map((patient, index) => (
                 <div
                   key={`${patient.consultationId}-${index}`}

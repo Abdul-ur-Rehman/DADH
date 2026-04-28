@@ -593,18 +593,26 @@ const DoctorConsultHistoryCard = () => {
                     onClick={() => togglePatient(index)}
                     style={{
                       cursor: "pointer",
-                      backgroundColor: "#007bff",
-                      color: "white",
+                      backgroundColor: patient.requestedCertificate?.length > 0 && !patient.certificates?.length ? "#fff3e0" : "#007bff",
+                      color: patient.requestedCertificate?.length > 0 && !patient.certificates?.length ? "#5d4037" : "white",
                       padding: "10px",
-                      border: "1px solid #ddd",
+                      border: patient.requestedCertificate?.length > 0 && !patient.certificates?.length ? "2px solid #fb8c00" : "1px solid #ddd",
                       marginBottom: "10px",
                       borderRadius: "5px"
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         {getIcon(patient?.type)}{" "}
                         <strong>{patient?.patientName}</strong> - {patient?.consultationCategoryName}
+                        {patient.requestedCertificate?.length > 0 && !patient.certificates?.length && (
+                          <span style={{
+                            background: "#fb8c00", color: "#fff", fontSize: 11, fontWeight: 700,
+                            borderRadius: 20, padding: "2px 10px", whiteSpace: "nowrap", marginLeft: 4,
+                          }}>
+                            📋 Certificate Requested
+                          </span>
+                        )}
                       </div>
                       <div>{expandedIndex === index ? "▲" : "▼"}</div>
                     </div>

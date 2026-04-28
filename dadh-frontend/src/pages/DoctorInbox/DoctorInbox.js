@@ -97,10 +97,11 @@ const ChatComponent = ({
         >
           <GroupChannelList
             selectedChannelUrl={currentChannelUrl}
-            onChannelCreated={(channel) => setCurrentChannelUrl(channel.url)}
+            onChannelCreated={(channel) => { if (channel) setCurrentChannelUrl(channel.url) }}
             onChannelSelect={(channel) => {
-              setCurrentChannelUrl(channel.url);
-              setShowChat(true);
+              if (!channel) return
+              setCurrentChannelUrl(channel.url)
+              setShowChat(true)
             }}
           />
         </div>

@@ -1,13 +1,5 @@
 import React from "react"
-
-function triggerDownload(url, filename) {
-  const a = document.createElement("a")
-  a.href = url
-  a.download = filename || "download.pdf"
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-}
+import { downloadCertificatePdf, downloadPrescriptionPdf } from "./generatePdf"
 
 const pillBtn = {
   background: "#F0FDFA",
@@ -23,9 +15,15 @@ const pillBtn = {
 
 const naText = { fontSize: 12, color: "#94a3b8" }
 
-const TH = ["Date", "Doctor", "Symptoms", "Doctor Notes", "Prescription", "Certificate"]
+const TH = ["Date", "Doctor", "Symptoms", "Doctor Notes", "Prescription", "Certificate", ""]
 
-export default function RecentHistoryTable({ consultations, onViewCertificate }) {
+export default function RecentHistoryTable({
+  consultations,
+  patientName,
+  patientDOB,
+  onRequestCertificate,
+  onViewDetails,
+}) {
   if (!consultations.length) {
     return (
       <div
@@ -140,10 +138,17 @@ export default function RecentHistoryTable({ consultations, onViewCertificate })
 
                 {/* Prescription */}
                 <td style={{ padding: "14px 16px" }}>
-                  {c.prescriptionUrl ? (
+                  {c.medications?.length > 0 ? (
                     <button
                       style={pillBtn}
-                      onClick={() => triggerDownload(c.prescriptionUrl, `prescription-${c._id}.pdf`)}
+                      onClick={() =>
+                        downloadPrescriptionPdf({
+                          medications: c.medications,
+                          doctorInfo: c.doctorInfo,
+                          patientName,
+                          patientDOB,
+                        })
+                      }
                     >
                       ⬇ Download
                     </button>
@@ -157,12 +162,63 @@ export default function RecentHistoryTable({ consultations, onViewCertificate })
                   {c.certificates?.length > 0 ? (
                     <button
                       style={pillBtn}
-                      onClick={() => onViewCertificate(c.certificates[0], c.doctorInfo)}
+                      onClick={() =>
+                        downloadCertificatePdf({
+                          certificate: c.certificates[0],
+                          doctorInfo: c.doctorInfo,
+                          patientName,
+                          patientDOB,
+                        })
+                      }
                     >
-                      📄 View
+                      ⬇ Download
+                    </button>
+                  ) : c.requestedCertificate?.length > 0 ? (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        background: "#FFF7ED",
+                        color: "#C2410C",
+                        border: "1px solid #FED7AA",
+                        borderRadius: 6,
+                        padding: "4px 10px",
+                        display: "inline-block",
+                      }}
+                    >
+                      ⏳ Pending
+                    </span>
+                  ) : onRequestCertificate ? (
+                    <button
+                      style={{ ...pillBtn, background: "#F0FDFA", color: "#0D7377", border: "1px solid #D1E8E8" }}
+                      onClick={() => onRequestCertificate(c._id)}
+                    >
+                      + Request
                     </button>
                   ) : (
                     <span style={naText}>Not available</span>
+                  )}
+                </td>
+
+                {/* View Details */}
+                <td style={{ padding: "14px 16px" }}>
+                  {onViewDetails && (
+                    <button
+                      style={{
+                        background: "#0D7377",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 6,
+                        padding: "5px 14px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                      onClick={() => onViewDetails(c)}
+                    >
+                      View Details
+                    </button>
                   )}
                 </td>
               </tr>

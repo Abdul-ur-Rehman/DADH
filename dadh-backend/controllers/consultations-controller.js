@@ -429,33 +429,21 @@ const getConsultationByPatient = async (req, res, next) => {
         .json({ state: false, message: "Invalid Patient ID" });
     }
 
-    /* fetch consultations for the patient */
-    const consultations = await Consultation.find({
-      patientId: patientId,
-    })
-      .sort({ _id: -1 })
-      .lean();                          // gives plain JS objects
+    /* fetch consultations for the patient — no .lean() so field-encryption init hook fires */
+    const docs = await Consultation.find({ patientId }).sort({ _id: -1 });
 
     /* attach totalAmount from billing codes */
     const enriched = await Promise.all(
-      consultations.map(async (c) => {
+      docs.map(async (doc) => {
+        const c = doc.toObject(); // plain object after decryption
         let total = 0;
 
         if (c.billCodes?.length) {
-          const bills = await Billing.find({
-            _id: { $in: c.billCodes },
-          }).lean();
-
-          total = bills.reduce(
-            (sum, b) => sum + (Number(b.amount) || 0),
-            0
-          );
+          const bills = await Billing.find({ _id: { $in: c.billCodes } }).lean();
+          total = bills.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
         }
 
-        return {
-          ...c,
-          totalAmount: total.toFixed(2),
-        };
+        return { ...c, totalAmount: total.toFixed(2) };
       })
     );
 
@@ -1353,6 +1341,24 @@ const getCertifications = async (req, res) => {
   }
 };
 
+const requestCertificate = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const consultation = await Consultation.findById(id);
+    if (!consultation) {
+      return res.status(404).json({ state: false, message: "Consultation not found" });
+    }
+    if (!consultation.isCompleted) {
+      return res.status(400).json({ state: false, message: "Consultation is still active" });
+    }
+    consultation.requestedCertificate.push({ requestedAt: new Date(), status: "pending" });
+    await consultation.save();
+    return res.status(200).json({ state: true, message: "Certificate requested successfully", data: consultation });
+  } catch (err) {
+    return res.status(500).json({ state: false, message: "Server error", error: err.message });
+  }
+};
+
 const addPrescribtion = async (req, res, next) => {
   try {
     const { medicine_id, dose, quantity, frequency, duration, instruction } =
@@ -1999,6 +2005,7 @@ module.exports = {
   deleteMedicationByIndex,
   deleteConditionByIndex,
   getCertifications,
+  requestCertificate,
   getHistoryPatient,
   getActiveConsultationByPatient,
   getBillingsByDoctorId,

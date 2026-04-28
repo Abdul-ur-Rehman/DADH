@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider"
-import { useSendbirdStateContext } from "@sendbird/uikit-react"
+import SendbirdChat from "@sendbird/chat"
+import { GroupChannelModule, GroupChannelHandler } from "@sendbird/chat/groupChannel"
 
 const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"
 const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID
@@ -26,11 +26,42 @@ function fmtDate(ts) {
   return new Date(ts).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })
 }
 
-// ─── Outer wrapper (provides Sendbird context) ─────────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function PatientInbox() {
   const patient = getPatient()
   const userId = localStorage.getItem("sendBirdUserId") || patient._id || ""
   const nickname = patient.name || "Patient"
+
+  const [sb, setSb] = useState(null)
+  const [sdkError, setSdkError] = useState("")
+
+  useEffect(() => {
+    if (!APP_ID || !userId) return
+
+    let instance
+
+    const init = async () => {
+      try {
+        instance = SendbirdChat.init({
+          appId: APP_ID,
+          modules: [new GroupChannelModule()],
+        })
+        await instance.connect(userId)
+        try { await instance.updateCurrentUserInfo({ nickname }) } catch {}
+        setSb(instance)
+      } catch (e) {
+        console.error("Sendbird init error:", e)
+        setSdkError("Failed to connect to chat service.")
+      }
+    }
+
+    init()
+
+    return () => {
+      if (instance) instance.disconnect().catch(() => {})
+    }
+  }, [userId, nickname])
 
   if (!APP_ID) {
     return (
@@ -40,19 +71,31 @@ export default function PatientInbox() {
     )
   }
 
-  return (
-    <SendbirdProvider appId={APP_ID} userId={userId} nickname={nickname}>
-      <InboxContent patient={patient} userId={userId} />
-    </SendbirdProvider>
-  )
+  if (sdkError) {
+    return (
+      <div className="dadh-tw-root" style={{ padding: 32, textAlign: "center", color: "#EF4444" }}>
+        {sdkError}
+      </div>
+    )
+  }
+
+  if (!sb) {
+    return (
+      <div className="dadh-tw-root" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 320 }}>
+        <div style={{ textAlign: "center", color: "#4B7172" }}>
+          <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.5 }}>💬</div>
+          <p style={{ margin: 0, fontSize: 13 }}>Connecting to chat…</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <InboxContent sb={sb} patient={patient} userId={userId} />
 }
 
-// ─── Inner component — has SDK access ─────────────────────────────────────────
-function InboxContent({ patient, userId }) {
-  const { stores } = useSendbirdStateContext()
-  const sb = stores?.sdkStore?.sdk
-  const sdkReady = !!(sb?.groupChannel)
+// ─── Inner component ──────────────────────────────────────────────────────────
 
+function InboxContent({ sb, patient, userId }) {
   const patientId = patient._id
 
   const [conversations, setConversations] = useState([])
@@ -63,15 +106,17 @@ function InboxContent({ patient, userId }) {
   const [text, setText] = useState("")
   const [sending, setSending] = useState(false)
   const [mobileShowChat, setMobileShowChat] = useState(false)
+  const [attachUploading, setAttachUploading] = useState(false)
 
   const bottomRef = useRef(null)
   const handlerKeyRef = useRef(null)
   const textareaRef = useRef(null)
+  const fileInputRef = useRef(null)
   const hasAutoSelectedRef = useRef(false)
 
-  // ── Load conversations when SDK is ready ─────────────────────────────────
+  // ── Load conversations ───────────────────────────────────────────────────
   const loadConversations = useCallback(async () => {
-    if (!sdkReady || !patientId) return
+    if (!patientId) return
     setLoadingConvs(true)
     try {
       const res = await fetch(`${BASE_URL}/consultations/getConsulationByPatient/${patientId}`)
@@ -89,24 +134,18 @@ function InboxContent({ patient, userId }) {
       const enriched = await Promise.all(
         Object.values(byDoctor).map(async (c) => {
           let doctorName = "Doctor"
-          const doctorSbId = c.doctorId // MongoDB _id == Sendbird user ID for doctors
+          const doctorSbId = c.doctorId
 
           try {
             const drRes = await fetch(`${BASE_URL}/doctor-requests/getOneById/${c.doctorId}`)
             const drJson = await drRes.json()
-            if (drJson.state && drJson.data) {
-              doctorName = drJson.data.name || "Doctor"
-            }
+            if (drJson.state && drJson.data) doctorName = drJson.data.name || "Doctor"
           } catch {}
 
           let channel = null
           try {
             const q = sb.groupChannel.createMyGroupChannelListQuery({
-              userIdsFilter: {
-                userIds: [userId, doctorSbId],
-                includeMode: true,
-                queryType: "AND",
-              },
+              userIdsFilter: { userIds: [userId, doctorSbId], includeMode: true, queryType: "AND" },
               includeEmpty: true,
               limit: 5,
             })
@@ -114,7 +153,6 @@ function InboxContent({ patient, userId }) {
             if (channels.length > 0) {
               channel = channels[0]
             } else if (!c.isCompleted) {
-              // Only auto-create a channel if consultation is still active
               channel = await sb.groupChannel.createChannel({
                 invitedUserIds: [userId, doctorSbId],
                 name: `Chat with Dr. ${doctorName}`,
@@ -133,7 +171,7 @@ function InboxContent({ patient, userId }) {
         })
       )
 
-      const valid = enriched.filter((c) => c.channel)
+      const valid = enriched.filter((c) => c.channel?.url)
       valid.sort((a, b) => {
         const at = a.channel?.lastMessage?.createdAt || new Date(a.date).getTime()
         const bt = b.channel?.lastMessage?.createdAt || new Date(b.date).getTime()
@@ -150,18 +188,18 @@ function InboxContent({ patient, userId }) {
     } finally {
       setLoadingConvs(false)
     }
-  }, [sdkReady, patientId, sb, userId])
+  }, [patientId, sb, userId])
 
   useEffect(() => { loadConversations() }, [loadConversations])
 
-  // ── Open a conversation and load its messages ──────────────────────────
-  const openConversation = (conv, showMobileChat = true) => {
+  // ── Open conversation & load messages ────────────────────────────────────
+  const openConversation = (conv, showMobile = true) => {
     setSelectedConv(conv)
-    if (showMobileChat) setMobileShowChat(true)
+    if (showMobile) setMobileShowChat(true)
   }
 
   useEffect(() => {
-    if (!selectedConv?.channel || !sb?.groupChannel) return
+    if (!selectedConv?.channel?.url) return
 
     setMessages([])
     setLoadingMsgs(true)
@@ -169,12 +207,10 @@ function InboxContent({ patient, userId }) {
 
     const channel = selectedConv.channel
 
-    // Remove old real-time handler
     if (handlerKeyRef.current) {
       sb.groupChannel.removeGroupChannelHandler(handlerKeyRef.current)
     }
 
-    // Fetch message history
     const query = channel.createPreviousMessageListQuery({ limit: 50, reverse: false })
     query.load()
       .then((msgs) => {
@@ -187,25 +223,23 @@ function InboxContent({ patient, userId }) {
         setLoadingMsgs(false)
       })
 
-    // Register real-time handler for new messages
     const handlerKey = `patient-inbox-${channel.url}-${Date.now()}`
     handlerKeyRef.current = handlerKey
-    sb.groupChannel.addGroupChannelHandler(handlerKey, {
+    sb.groupChannel.addGroupChannelHandler(handlerKey, new GroupChannelHandler({
       onMessageReceived(ch, msg) {
-        if (ch.url !== channel.url) return
+        if (ch?.url !== channel.url) return
         setMessages((prev) => [...prev, msg])
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 60)
       },
-    })
+    }))
 
     return () => {
       sb.groupChannel.removeGroupChannelHandler(handlerKey)
     }
   }, [selectedConv, sb])
 
-  // Cleanup on unmount
   useEffect(() => () => {
-    if (handlerKeyRef.current && sb?.groupChannel) {
+    if (handlerKeyRef.current) {
       sb.groupChannel.removeGroupChannelHandler(handlerKeyRef.current)
     }
   }, [sb])
@@ -216,9 +250,7 @@ function InboxContent({ patient, userId }) {
     if (!msg || !selectedConv?.channel || selectedConv.isCompleted || sending) return
     setSending(true)
     setText("")
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"
-    }
+    if (textareaRef.current) textareaRef.current.style.height = "auto"
     selectedConv.channel.sendUserMessage({ message: msg })
       .onSucceeded((sentMsg) => {
         setMessages((prev) => [...prev, sentMsg])
@@ -227,7 +259,7 @@ function InboxContent({ patient, userId }) {
       })
       .onFailed((err) => {
         console.error("PatientInbox send:", err)
-        setText(msg) // restore on failure
+        setText(msg)
         setSending(false)
       })
   }, [text, selectedConv, sending])
@@ -236,50 +268,46 @@ function InboxContent({ patient, userId }) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────
-  if (!sdkReady) {
-    return (
-      <div className="dadh-tw-root" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 320 }}>
-        <div style={{ textAlign: "center", color: "#4B7172" }}>
-          <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.5 }}>💬</div>
-          <p style={{ margin: 0, fontSize: 13 }}>Connecting to chat…</p>
-        </div>
-      </div>
-    )
-  }
+  // ── Send file ────────────────────────────────────────────────────────────
+  const handleFileChange = useCallback((e) => {
+    const file = e.target.files[0]
+    if (!file || !selectedConv?.channel || selectedConv.isCompleted) return
+    if (file.size > 25 * 1024 * 1024) { alert("File must be under 25 MB."); return }
+    setAttachUploading(true)
+    selectedConv.channel.sendFileMessage({ file, fileName: file.name, mimeType: file.type })
+      .onSucceeded((sentMsg) => {
+        setMessages((prev) => [...prev, sentMsg])
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 60)
+        setAttachUploading(false)
+      })
+      .onFailed(() => {
+        alert("File upload failed. Please try again.")
+        setAttachUploading(false)
+      })
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }, [selectedConv])
 
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
       className="dadh-tw-root"
       style={{
-        display: "flex",
-        height: "calc(100vh - 108px)",
-        minHeight: 400,
-        background: "#ffffff",
-        borderRadius: 12,
-        border: "1px solid #D1E8E8",
-        boxShadow: "0 1px 8px rgba(13,115,119,0.07)",
-        overflow: "hidden",
+        display: "flex", height: "calc(100vh - 108px)", minHeight: 400,
+        background: "#ffffff", borderRadius: 12, border: "1px solid #D1E8E8",
+        boxShadow: "0 1px 8px rgba(13,115,119,0.07)", overflow: "hidden",
       }}
     >
       {/* ── Left: Conversation list ── */}
       <div
         style={{
-          width: 300,
-          flexShrink: 0,
-          borderRight: "1px solid #D1E8E8",
-          display: mobileShowChat ? "none" : "flex",
-          flexDirection: "column",
+          width: 300, flexShrink: 0, borderRight: "1px solid #D1E8E8",
+          display: mobileShowChat ? "none" : "flex", flexDirection: "column",
         }}
-        className="md:flex!"
       >
-        {/* Header */}
         <div style={{ padding: "18px 20px 14px", borderBottom: "1px solid #D1E8E8", flexShrink: 0 }}>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#111E1F" }}>Messages</h2>
           <p style={{ margin: "2px 0 0", fontSize: 12, color: "#4B7172" }}>Your consultation chats</p>
         </div>
-
-        {/* List */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {loadingConvs ? <ConvListSkeleton /> : conversations.length === 0 ? <EmptyConvList /> : (
             conversations.map((conv) => (
@@ -297,8 +325,7 @@ function InboxContent({ patient, userId }) {
       {/* ── Right: Chat window ── */}
       <div
         style={{
-          flex: 1,
-          minWidth: 0,
+          flex: 1, minWidth: 0,
           display: (!mobileShowChat && window.innerWidth < 768) ? "none" : "flex",
           flexDirection: "column",
         }}
@@ -307,16 +334,10 @@ function InboxContent({ patient, userId }) {
           <>
             {/* Chat header */}
             <div style={{ padding: "13px 20px", borderBottom: "1px solid #D1E8E8", display: "flex", alignItems: "center", gap: 12, background: "#fff", flexShrink: 0 }}>
-              {/* Mobile back button */}
-              <button
-                onClick={() => setMobileShowChat(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#4B7172", padding: "4px 8px 4px 0", fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}
-                className="md:hidden!"
-              >
+              <button onClick={() => setMobileShowChat(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#4B7172", padding: "4px 8px 4px 0", fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}>
                 ← Back
               </button>
-
-              {/* Doctor avatar */}
               <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E6F4F4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#0D7377", flexShrink: 0 }}>
                 {getInitials(selectedConv.doctorName)}
               </div>
@@ -333,23 +354,17 @@ function InboxContent({ patient, userId }) {
             {selectedConv.isCompleted && (
               <div style={{ background: "#FFF7ED", borderBottom: "1px solid #FED7AA", padding: "8px 20px", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 14 }}>🔒</span>
-                <span style={{ fontSize: 12, color: "#92400E" }}>
-                  This consultation has ended. You can view chat history but cannot send new messages.
-                </span>
+                <span style={{ fontSize: 12, color: "#92400E" }}>This consultation has ended. You can view chat history but cannot send new messages.</span>
               </div>
             )}
 
             {/* Messages */}
             <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 8px" }}>
-              {loadingMsgs ? (
-                <MessagesSkeleton />
-              ) : messages.length === 0 ? (
+              {loadingMsgs ? <MessagesSkeleton /> : messages.length === 0 ? (
                 <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#4B7172", minHeight: 200 }}>
                   <span style={{ fontSize: 36, marginBottom: 8, opacity: 0.45 }}>💬</span>
                   <p style={{ margin: 0, fontSize: 13 }}>No messages yet.</p>
-                  {!selectedConv.isCompleted && (
-                    <p style={{ margin: "4px 0 0", fontSize: 12, color: "#94a3b8" }}>Type a message below to start the conversation.</p>
-                  )}
+                  {!selectedConv.isCompleted && <p style={{ margin: "4px 0 0", fontSize: 12, color: "#94a3b8" }}>Type a message below to start the conversation.</p>}
                 </div>
               ) : (
                 messages.map((msg, i) => (
@@ -366,7 +381,19 @@ function InboxContent({ patient, userId }) {
                   Chat is read-only — consultation has ended.
                 </p>
               ) : (
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 10, background: "#F8FFFE", border: "1.5px solid #D1E8E8", borderRadius: 16, padding: "8px 10px 8px 14px", transition: "border-color 0.15s" }}
+                  onFocusCapture={(e) => e.currentTarget.style.borderColor = "#0D7377"}
+                  onBlurCapture={(e) => e.currentTarget.style.borderColor = "#D1E8E8"}
+                >
+                  <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" onChange={handleFileChange} style={{ display: "none" }} />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={attachUploading}
+                    title="Attach file"
+                    style={{ background: "none", border: "none", padding: "4px 6px", cursor: attachUploading ? "not-allowed" : "pointer", color: attachUploading ? "#94a3b8" : "#4B7172", fontSize: 19, lineHeight: 1, flexShrink: 0, opacity: attachUploading ? 0.5 : 1 }}
+                  >
+                    {attachUploading ? "⏳" : "📎"}
+                  </button>
                   <textarea
                     ref={textareaRef}
                     value={text}
@@ -374,27 +401,8 @@ function InboxContent({ patient, userId }) {
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message… (Enter to send)"
                     rows={1}
-                    style={{
-                      flex: 1,
-                      border: "1px solid #D1E8E8",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      fontSize: 14,
-                      color: "#111E1F",
-                      resize: "none",
-                      outline: "none",
-                      fontFamily: "Inter, system-ui, sans-serif",
-                      lineHeight: 1.5,
-                      maxHeight: 100,
-                      overflowY: "auto",
-                      background: "#FAFFFE",
-                    }}
-                    onInput={(e) => {
-                      e.target.style.height = "auto"
-                      e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px"
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = "#0D7377" }}
-                    onBlur={(e) => { e.target.style.borderColor = "#D1E8E8" }}
+                    style={{ flex: 1, border: "none", background: "transparent", padding: "5px 0", fontSize: 14, color: "#111E1F", resize: "none", outline: "none", fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6, maxHeight: 120, overflowY: "hidden" }}
+                    onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px" }}
                   />
                   <SendButton onClick={handleSend} disabled={!text.trim() || sending} />
                 </div>
@@ -402,7 +410,6 @@ function InboxContent({ patient, userId }) {
             </div>
           </>
         ) : (
-          /* No conversation selected */
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#4B7172" }}>
             <span style={{ fontSize: 48, marginBottom: 12, opacity: 0.35 }}>💬</span>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#111E1F" }}>Your messages</p>
@@ -419,38 +426,18 @@ function InboxContent({ patient, userId }) {
 function ConvItem({ conv, isSelected, onClick }) {
   const [hovered, setHovered] = useState(false)
   const lastMsg = conv.channel?.lastMessage
-
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: "14px 20px",
-        display: "flex",
-        gap: 12,
-        alignItems: "flex-start",
-        cursor: "pointer",
-        borderLeft: isSelected ? "3px solid #0D7377" : "3px solid transparent",
-        background: isSelected ? "#F0FDFA" : hovered ? "#F8FFFE" : "transparent",
-        transition: "background 0.12s",
-      }}
-    >
+    <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{ padding: "14px 20px", display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer", borderLeft: isSelected ? "3px solid #0D7377" : "3px solid transparent", background: isSelected ? "#F0FDFA" : hovered ? "#F8FFFE" : "transparent", transition: "background 0.12s" }}>
       <div style={{ width: 40, height: 40, borderRadius: "50%", background: isSelected ? "#CCEDEE" : "#E6F4F4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#0D7377", flexShrink: 0 }}>
         {getInitials(conv.doctorName)}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
-          <span style={{ fontWeight: 600, fontSize: 13, color: "#111E1F", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            Dr. {conv.doctorName}
-          </span>
-          <span style={{ fontSize: 11, color: "#4B7172", flexShrink: 0, marginLeft: 8 }}>
-            {lastMsg ? fmtTime(lastMsg.createdAt) : fmtDate(conv.date)}
-          </span>
+          <span style={{ fontWeight: 600, fontSize: 13, color: "#111E1F", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Dr. {conv.doctorName}</span>
+          <span style={{ fontSize: 11, color: "#4B7172", flexShrink: 0, marginLeft: 8 }}>{lastMsg ? fmtTime(lastMsg.createdAt) : fmtDate(conv.date)}</span>
         </div>
-        <p style={{ margin: "0 0 5px", fontSize: 12, color: "#4B7172", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {lastMsg?.message || "No messages yet"}
-        </p>
+        <p style={{ margin: "0 0 5px", fontSize: 12, color: "#4B7172", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lastMsg?.message || "No messages yet"}</p>
         <StatusBadge completed={conv.isCompleted} small />
       </div>
     </div>
@@ -459,43 +446,27 @@ function ConvItem({ conv, isSelected, onClick }) {
 
 function StatusBadge({ completed, small }) {
   return (
-    <span style={{
-      fontSize: small ? 10 : 11,
-      fontWeight: 600,
-      padding: small ? "2px 7px" : "3px 10px",
-      borderRadius: 20,
-      background: completed ? "#F1F5F9" : "#DCFCE7",
-      color: completed ? "#64748B" : "#16A34A",
-      display: "inline-block",
-    }}>
+    <span style={{ fontSize: small ? 10 : 11, fontWeight: 600, padding: small ? "2px 7px" : "3px 10px", borderRadius: 20, background: completed ? "#F1F5F9" : "#DCFCE7", color: completed ? "#64748B" : "#16A34A", display: "inline-block" }}>
       {completed ? "Completed" : "Active"}
     </span>
   )
 }
 
 function MessageBubble({ msg, isOwn }) {
+  const isFile = msg.messageType === "file"
   return (
     <div style={{ display: "flex", justifyContent: isOwn ? "flex-end" : "flex-start", marginBottom: 14 }}>
       <div style={{ maxWidth: "72%" }}>
-        {!isOwn && (
-          <p style={{ margin: "0 0 4px 4px", fontSize: 11, color: "#4B7172", fontWeight: 600 }}>
-            {msg.sender?.nickname || "Doctor"}
-          </p>
-        )}
-        <div style={{
-          background: isOwn ? "#0D7377" : "#F1F5F9",
-          color: isOwn ? "#fff" : "#111E1F",
-          borderRadius: isOwn ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-          padding: "10px 14px",
-          fontSize: 14,
-          lineHeight: 1.5,
-          wordBreak: "break-word",
-        }}>
-          {msg.message}
+        {!isOwn && <p style={{ margin: "0 0 4px 4px", fontSize: 11, color: "#4B7172", fontWeight: 600 }}>{msg.sender?.nickname || "Doctor"}</p>}
+        <div style={{ background: isOwn ? "#0D7377" : "#F1F5F9", color: isOwn ? "#fff" : "#111E1F", borderRadius: isOwn ? "16px 16px 4px 16px" : "16px 16px 16px 4px", padding: "10px 14px", fontSize: 14, lineHeight: 1.5, wordBreak: "break-word" }}>
+          {isFile ? (
+            <a href={msg.url} target="_blank" rel="noopener noreferrer" style={{ color: isOwn ? "#A7F3D0" : "#0D7377", fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 16 }}>📎</span>
+              <span style={{ textDecoration: "underline", wordBreak: "break-all" }}>{msg.name || "Attachment"}</span>
+            </a>
+          ) : msg.message}
         </div>
-        <p style={{ margin: "4px 4px 0", fontSize: 11, color: "#94a3b8", textAlign: isOwn ? "right" : "left" }}>
-          {fmtTime(msg.createdAt)}
-        </p>
+        <p style={{ margin: "4px 4px 0", fontSize: 11, color: "#94a3b8", textAlign: isOwn ? "right" : "left" }}>{fmtTime(msg.createdAt)}</p>
       </div>
     </div>
   )
@@ -504,25 +475,8 @@ function MessageBubble({ msg, isOwn }) {
 function SendButton({ onClick, disabled }) {
   const [hovered, setHovered] = useState(false)
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: disabled ? "#E2E8F0" : hovered ? "#0A5F62" : "#0D7377",
-        color: disabled ? "#94a3b8" : "#fff",
-        border: "none",
-        borderRadius: 10,
-        padding: "10px 20px",
-        fontSize: 14,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        transition: "background 0.15s",
-        whiteSpace: "nowrap",
-        flexShrink: 0,
-      }}
-    >
+    <button onClick={onClick} disabled={disabled} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{ background: disabled ? "#E2E8F0" : hovered ? "#0A5F62" : "#0D7377", color: disabled ? "#94a3b8" : "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", transition: "background 0.15s", whiteSpace: "nowrap", flexShrink: 0 }}>
       Send
     </button>
   )
