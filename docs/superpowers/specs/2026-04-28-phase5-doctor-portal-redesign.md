@@ -3,6 +3,7 @@
 **Date:** 2026-04-28
 **Branch:** dadh/phase1
 **Status:** Approved for implementation
+**Reference:** `reference pictures/davinci.doctordoctor.com.au_*`
 
 ---
 
@@ -14,7 +15,7 @@ Pages in implementation order:
 1. Doctor Dashboard (`/doctor`)
 2. Consultation Details (`/doctor/consult/:id`)
 3. Consult History (`/doctor/history`)
-4. Billing page
+4. Billing page (`/doctor/billing`)
 5. Settings / My Account (`/doctor/settings`)
 6. Doctor Inbox (`/doctor/inbox`)
 
@@ -24,7 +25,7 @@ Doctor OTP/login page is already done (Phase 3). Doctor Signup redesign is defer
 
 ## 2. Design System
 
-Same tokens as Phase 4 patient pages. No new colors or fonts.
+Same tokens as Phase 4 patient pages.
 
 | Token | Value | Use |
 |---|---|---|
@@ -35,10 +36,11 @@ Same tokens as Phase 4 patient pages. No new colors or fonts.
 | `destructive` | `#EF4444` | Errors, end-consultation |
 | `success` | `#22C55E` | Confirmed states |
 | `border` | `#D1E8E8` | Card borders, dividers |
+| `amber` | `#F59E0B` | Badges, warnings, unread dots |
 
 All new pages:
 - Wrapped in `<div className="dadh-tw-root">`
-- Use relative imports (no `@/` alias)
+- Relative imports only (no `@/` alias)
 - Page folder path added to `tailwind.config.js → content`
 - Colors via inline styles where Bootstrap conflicts (same fix as Phase 4)
 
@@ -46,90 +48,167 @@ All new pages:
 
 ## 3. Dashboard (`/doctor`)
 
-### Layout
-Three-column layout inside a full-height shell:
-- **Left:** Fixed-width teal sidebar (`#0D7377`, 220px expanded)
-- **Center:** Patient queue (flex-1)
-- **Right:** Tabbed chat panel (280px fixed)
+### Overall shell structure
 
-### Sidebar
+```
+┌─────────────────────────────────────────────────────┐
+│  TOP STATS BAR (full width, above everything)        │
+├──────────┬──────────────────────────┬───────────────┤
+│ SIDEBAR  │  PATIENT QUEUE (center)  │  CHAT PANEL   │
+│ (220px)  │  (flex-1)                │  (280px)      │
+└──────────┴──────────────────────────┴───────────────┘
+```
+
+### Top Stats Bar
+Full-width bar pinned above the three-column layout. Three sections:
+- **Left:** Billings — `$X earned / $Y pending` (green text for earned, muted for pending)
+- **Center:** Patients — `X today / Y total` (teal text)
+- **Right:** Queue — `N` (amber/red text if >0) + "Search patient" input
+
+### Sidebar (left, 220px, `#0D7377` background)
 - DADH logo + name at top
-- Nav items: Dashboard, Inbox, History, Billing, Settings
-- "Consult History" item shows an amber badge with count of pending certificate requests (existing logic from `SidebarContent.js` — port to new design)
-- Doctor avatar + name + "Online" dot at bottom
-- Sidebar is expanded by default; no collapse in Phase 5
+- Nav items: Home, Inbox, Consult History, Billing, Settings, Logout
+- Active item: white text + `rgba(255,255,255,0.2)` background pill
+- "Consult History" item shows amber badge with count of pending certificate requests (existing polling logic from `SidebarContent.js`)
+- **Online users list** at the bottom (below a divider): list of other online doctors with green/grey presence dot and their current queue count in parentheses
+- Doctor avatar + name + "● Online" dot above online users list
 
 ### Patient Queue (center)
-- Header: `"Good morning, Dr. [Name]"` with today's date on the right
-- If active consultation exists: amber banner "You have an active consultation" + "Return to Consult" button
-- Section title: "Patients Waiting (N)"
-- Each patient row card:
-  - Avatar (initials or photo) + patient name + consult type (Video/Audio/Chat) + wait time
-  - First/top patient: teal border highlight (`border-primary`)
-  - "Accept" button — teal for top patient, muted for others
-- Empty state: "No patients waiting" with a small icon
-- Polling: full data refresh every 5 seconds (existing logic)
+- Section heading: **"Patients Waiting"**
+- Two tabs: **TELEHEALTH** | **HOME VISITS** (underline style, teal active)
+- **"+ Add Consult"** button top-right of the tab bar (opens new consultation modal — search existing patient or enter mobile to create new)
+- If active consultation exists: amber banner "You have an active consultation" + "Return to Consult" button (existing logic)
 
-### Chat Panel (right)
-- Two tabs: **Clinical** (active consult chat) and **Dispatch** (admin/dispatch messages)
-- Amber unread dot on the tab with new messages
-- Active tab content: shows patient name + "Active consultation" sub-label, message bubbles, input bar with Send button
+**Each patient row card:**
+- **Communication mode icon** (left): microphone SVG = audio, chat bubble SVG = text chat, video camera SVG = video
+- **Priority/Express/Specialist Available badges**: colored pill chips (amber = Priority, teal-outline = Express, purple-outline = Specialist Available) — shown when flagged
+- **Patient name, age, gender** (bold, e.g. "Sammantha Arja, 35, Female")
+- **Disease category + description** on second line (e.g. "Mental Health / Sleep / Headache: Patient feels dizzy and…") — truncated with ellipsis at ~100 chars
+- **Wait time** (right-aligned, e.g. "3 hrs", "an hr")
+- **Chevron arrow** (›) at far right — clicking the row navigates to consultation details
+- Top/first patient in queue: teal left-border highlight + slightly elevated background (`#F0FDFA`)
+- "Accept" button is NOT shown on the queue row — doctor enters consult by clicking the row/chevron
+
+- Empty state: icon + "No patients waiting" centered message
+
+- Polling: full data refresh every 5 seconds (existing `fetchData` logic)
+
+### Chat Panel (right, 280px)
+- Two tabs: **CLINICAL** | **DISPATCHER**
+- Amber unread dot on tab with new messages
+- **CLINICAL tab**: shows the active patient's name + "Active consultation" sub-label; chat bubbles (doctor teal right-aligned, patient white left-aligned); input bar with Send button
+- **DISPATCHER tab**: shows admin/dispatch group messages; same bubble layout
 - No collapse toggle in Phase 5
 
 ---
 
 ## 4. Consultation Details (`/doctor/consult/:id`)
 
-### Layout
-Three-column layout (roughly 3:4:3 ratio):
+### Navigation
+- **"← Back to all patients"** link at very top (navigates to `/doctor`)
 
-**Column 1 — Patient Info**
-- Avatar, name, age, gender
-- Chief complaint
-- Vitals (if available)
-- Consultation type + start time
+### Layout: three sections stacked
 
-**Column 2 — Notes / Scribe**
-- Tabs: Live Transcript | Clinical Notes | Templates
-- **Live Transcript tab:** scrolling real-time transcript (existing Deepgram integration)
-- **Clinical Notes tab:** rich textarea; auto-save indicator
-- **Templates tab:** two sub-sections
-  - *Snippets* — short text chips (e.g., "Patient denies chest pain") that insert into notes on click
-  - *Structured Forms* — SOAP, Follow-up, Referral form templates; filling them populates the notes field
+```
+┌──────────────────────────────────────────────────────┐
+│ PATIENT HEADER CARD (full width)                      │
+├─────────────────────────────┬────────────────────────┤
+│ SUPPORTING INFO (left ~45%) │ PATIENT NOTES (~55%)   │
+├─────────────────────────────┴────────────────────────┤
+│ CHAT HISTORY panel (right column, full height)        │
+└──────────────────────────────────────────────────────┘
+```
 
-**Column 3 — Actions**
-- Stop Consultation button (red, top)
-- Post-stop state: green "Consultation stopped" banner + three action buttons: Certify | Bill | Go to Dashboard
-- Certificate form (inline, shows when Certify clicked)
-- Billing code picker (inline, shows when Bill clicked — replaces current modal)
-- Video/audio controls (mute, camera, end call)
+Actually a two-column layout at the content level:
+- **Left ~65%:** Patient header card + Supporting Info + Patient Notes (stacked vertically)
+- **Right ~35%:** Chat history (full height, sticky)
+
+### Patient Header Card
+- Patient name (linked/underlined), age, gender, phone number
+- **"+ Add family"** button top-right
+- **Action icon row** — 5 circular icon buttons with label below:
+  - 💊 **Prescribe** → opens Prescribe modal
+  - 📋 **Refer** → opens Refer modal
+  - 🔬 **Investigate** → opens Investigate modal
+  - 📄 **Certify** → opens Certificate form modal
+  - 💰 **Bill** → opens Billing code modal
+- Below action icons: two fields side by side — **Address** (read-only) | **Allergies** (read-only, e.g. "NKDA")
+
+### Supporting Information Panel
+Expandable accordion sections:
+- **Templates** → (click to expand: text snippet library)
+- **Results** → (click to expand: uploaded results/attachments)
+- **Conditions** — lists existing conditions with "+ Add New" button
+- **Medications** — lists existing medications with date + "+ Add New" button
+
+### Patient Notes Panel
+- Section heading: **"Patient notes"** + **"AI Scribe"** button (top-right, teal text link)
+- Large textarea for free-text clinical notes
+- AI Scribe: clicking starts/stops Deepgram transcription and populates notes (existing integration)
+
+### Stop Consultation (top of left column, above patient header)
+- **Stop** button (red, prominent) visible while consultation is active
+- After stop: green banner "Consultation stopped. Please certify and/or bill before leaving."
+- Post-stop: the 5 action icon buttons (Prescribe/Refer/Investigate/Certify/Bill) remain active
+- **"Go to Dashboard"** button as secondary action after stop
+- Soft validation: if Certify and Bill both untouched after stop, show amber dismissible warning: "This consultation has incomplete items. They will be flagged in History."
+
+### Chat History Panel (right column)
+- Heading: **"Chat history"**
+- "Your consult has started" separator at top
+- **Patient intake data cards** (shown at top of chat): Date of birth, Symptom or Condition, Additional information, Allergies, Consultation type requested — displayed as structured info cards, not chat bubbles
+- Live chat messages below (doctor name + bubble, patient name + bubble)
+- Prescriptions issued appear as chat bubble cards with medication name/dose
+- "Dr [Name] has ended the consult" footer message after stop
+
+### Action Modals
+
+**Prescribe modal:**
+- Search: Product Name / Active Ingredient toggle + search input (MIMS integrated)
+- Fields: Dose, Quantity, Frequency (dropdown), Duration (dropdown), Instructions (optional textarea)
+- "Include brand name on script" checkbox
+- Primary button: **Prescribe**
+
+**Refer modal:**
+- Search: "Specialist name or category" input with magnifier
+- "Referral message" textarea + **"AI Generate"** button (auto-generates referral letter)
+- Primary button: **Refer**
+
+**Investigate modal:**
+- "Investigation type" dropdown (Radiology, Pathology, etc.)
+- Two textareas: Investigations | Note
+- Primary button: **Order**
+
+**Certify modal:** (existing certificate form, restyled)
+
+**Bill modal:** (existing billing code picker, restyled — no longer ends consultation, only saves codes)
 
 ### Status-Complete Validation (soft)
-- No hard blocking on stop.
-- After stop, if certificate has not been issued and no billing code saved, show a dismissible amber warning: "This consultation has incomplete items. They will be flagged in History."
-- In Consult History, consultations with missing cert or billing show an amber "⚠ Incomplete" badge.
+- No hard blocking.
+- After stop, if cert not issued AND no billing code: amber dismissible warning (see above).
+- In Consult History, rows with missing cert or billing show amber "⚠ Incomplete" badge.
 
 ---
 
 ## 5. Consult History (`/doctor/history`)
 
-- Full-width table (replaces current card layout if applicable)
+- Full-width table
 - Columns: Patient | Date | Type | Duration | Status | Certificate | Billing | Actions
-- **Date-range filter:** date picker with From / To inputs; defaults to last 30 days
-- **Search:** filter by patient name
+- **Date-range filter:** From / To date pickers; default = last 30 days
+- **Search:** filter by patient name (text input)
 - **Status filter:** dropdown — All / Completed / Incomplete
-- Each row: "⚠ Incomplete" amber badge if cert or billing missing (soft validation)
-- "📋 Certificate Requested" amber badge if patient requested cert (existing logic, ported to new design)
-- Actions column: View | Issue Certificate | Add Billing
+- Amber "⚠ Incomplete" badge on rows missing cert or billing
+- Amber "📋 Certificate Requested" badge on rows where patient requested cert but none issued
+- Actions: View | Issue Certificate | Add Billing
 
 ---
 
-## 6. Billing Page
+## 6. Billing Page (`/doctor/billing`)
 
-- Summary cards at top: total consultations billed this month, total revenue, pending items
-- Table: same structure as History but filtered to billing-relevant columns
-- "Add billing code" action per row for unbilled consultations
-- No new backend endpoints needed; uses existing billing routes
+- Summary stat cards: billed this month, total revenue, pending items
+- Table: patient, date, consult type, billing codes, amount, status
+- "Add billing code" per unbilled row
+- No new backend endpoints; uses existing billing routes
 
 ---
 
@@ -138,62 +217,67 @@ Three-column layout (roughly 3:4:3 ratio):
 New page — does not currently exist.
 
 Sections:
-- **Profile:** name, email, phone, specialty, profile photo upload (same pattern as patient photo upload)
-- **Availability:** toggle online/offline status; set working hours
+- **Profile:** name, email, phone, specialty, profile photo upload
+- **Availability:** online/offline toggle; working hours
 - **Notifications:** toggles for new patient alerts, certificate requests
-- **Security:** change password form (current password + new + confirm)
+- **Security:** change password (current + new + confirm)
 
-Backend: reuse existing `PATCH /doctor/auth/update/:id` or equivalent. If endpoint doesn't cover all fields, add what's needed in Phase 5 scope.
+Backend: reuse or extend `PATCH /doctor/auth/update/:id`.
 
 ---
 
 ## 8. Doctor Inbox (`/doctor/inbox`)
 
-Port the existing doctor inbox to the new Tailwind design system.
+Port existing inbox to new Tailwind design.
 
-Features:
-- Conversation list (left panel) + active chat (right panel) — same split-panel pattern as PatientInbox
-- Sendbird v4 SDK (no UIKit), `GroupChannelHandler` for real-time events
-- File attachments: image and document upload via Sendbird file message API
-- Auto-resize textarea input (same fix applied in PatientInbox — `overflowY: "hidden"`, container-level focus ring)
-- Consultation-based conversation list (filter by consultation ID)
+- Split panel: conversation list (left) + active chat (right)
+- Sendbird v4 SDK (no UIKit), `GroupChannelHandler` for real-time
+- File attachments: image + document upload via Sendbird file message API
+- Auto-resize textarea (`overflowY: "hidden"`, container focus ring — same pattern as PatientInbox)
+- Consultation-based conversation filtering
 
 ---
 
 ## 9. Routing & Navigation
 
-New routes to add in `allRoutes.js`:
-- `/doctor/settings` → `DoctorSettings` (new)
-- Existing routes stay the same; pages are replaced in-place
+New/changed routes in `allRoutes.js`:
+- `/doctor/settings` → `DoctorSettings` (new page)
+- Dashboard, History, Billing, Inbox routes swap to new page components in-place
 
-Doctor layout shell: create `DoctorAppLayout.jsx` (mirrors `PatientAppLayout.jsx`) wrapping `AppLayout` with doctor nav items and a "Go Online" toggle in the header.
+Doctor layout shell: `DoctorAppLayout.jsx` (mirrors `PatientAppLayout.jsx`) — wraps `AppLayout` with doctor nav items.
 
 ---
 
 ## 10. What Is NOT in Phase 5
 
-- Doctor Signup/Register page redesign → Phase 6
-- Doctor OTP page → already done (Phase 3)
+- Doctor Signup/Register page → Phase 6
 - Admin portal pages → Phase 6+
-- Any new backend features beyond what's needed to support the Settings page fields
-- Chat panel collapse/expand toggle → deferred
+- Chat panel collapse toggle → deferred
+- Doctor Signup hybrid flow → deferred
+- New backend features beyond Settings page fields
 
 ---
 
 ## 11. File Checklist
 
 ### New files
-- `src/pages/DoctorDashboard/DoctorDashboard.jsx` (replaces DoctorHome)
-- `src/pages/DoctorDashboard/components/PatientQueueCard.jsx`
+- `src/pages/DoctorDashboard/DoctorDashboard.jsx`
+- `src/pages/DoctorDashboard/components/PatientQueueRow.jsx`
 - `src/pages/DoctorDashboard/components/ChatPanel.jsx`
-- `src/pages/DoctorConsultDetails/DoctorConsultDetailsNew.jsx` (replaces existing)
-- `src/pages/DoctorConsultDetails/components/PatientInfoColumn.jsx`
-- `src/pages/DoctorConsultDetails/components/NotesColumn.jsx`
-- `src/pages/DoctorConsultDetails/components/ActionsColumn.jsx`
-- `src/pages/DoctorConsultDetails/components/TemplatePanel.jsx`
+- `src/pages/DoctorDashboard/components/TopStatsBar.jsx`
+- `src/pages/DoctorDashboard/components/OnlineUsersList.jsx`
+- `src/pages/DoctorConsultDetails/DoctorConsultDetailsNew.jsx`
+- `src/pages/DoctorConsultDetails/components/PatientHeaderCard.jsx`
+- `src/pages/DoctorConsultDetails/components/ActionIconRow.jsx`
+- `src/pages/DoctorConsultDetails/components/SupportingInfoPanel.jsx`
+- `src/pages/DoctorConsultDetails/components/PatientNotesPanel.jsx`
+- `src/pages/DoctorConsultDetails/components/ChatHistoryPanel.jsx`
+- `src/pages/DoctorConsultDetails/modals/PrescribeModal.jsx`
+- `src/pages/DoctorConsultDetails/modals/ReferModal.jsx`
+- `src/pages/DoctorConsultDetails/modals/InvestigateModal.jsx`
 - `src/pages/DoctorHistory/DoctorHistoryNew.jsx`
 - `src/pages/DoctorBilling/DoctorBillingNew.jsx`
-- `src/pages/DoctorSettings/DoctorSettings.jsx` (new)
+- `src/pages/DoctorSettings/DoctorSettings.jsx`
 - `src/pages/DoctorInbox/DoctorInboxNew.jsx`
 - `src/components/DoctorLayout/DoctorAppLayout.jsx`
 
