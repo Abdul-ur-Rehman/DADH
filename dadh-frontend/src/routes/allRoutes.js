@@ -164,6 +164,12 @@ import AdminModelTable from "pages/AdminModel/AdminModelTable";
 import AdminDetailsForm from "pages/AdminModel/AdminDetailsForm";
 import BillingDetails from "pages/AdminBillingDetails/BillingDetails";
 import AdminHome from "pages/AdminHome/AdminHome";
+import AdminLoginNew from "pages/AdminLoginNew/AdminLoginNew";
+import AdminHomeDashboard from "pages/AdminHomeDashboard/AdminHomeDashboard";
+import AdminDoctorsNew from "pages/AdminDoctorsNew/AdminDoctorsNew";
+import AdminPatientsNew from "pages/AdminPatientsNew/AdminPatientsNew";
+import AdminConsultationsNew from "pages/AdminConsultationsNew/AdminConsultationsNew";
+import AdminSettingsNew from "pages/AdminSettingsNew/AdminSettingsNew";
 
 
 // import PatientFamilyPage from "pages/PatientFamily/PatientFamilyPage";
@@ -177,24 +183,20 @@ const userRoutes = [
 
   // ADMIN
 
-  { path: "/admin/dashboard", component: <AdminDashboard />, allowedRoles: ['admin'] },
-  { path: "/admin/home", component: <AdminHome />, allowedRoles: ['admin'] },
-  { path: "/admin/Consultations", component: <BillingDetails />, allowedRoles: ['admin'] },
+  { path: "/admin/dashboard", component: <AdminHomeDashboard />, allowedRoles: ['admin'] },
+  { path: "/admin/home", component: <AdminHomeDashboard />, allowedRoles: ['admin'] },
+  { path: "/admin/Consultations", component: <AdminConsultationsNew />, allowedRoles: ['admin'] },
   { path: "/admin/inbox", component: <AdminInboxPage />, allowedRoles: ['admin'] },
-  { path: "/admin/doctorRequests/table", component: <AdminDoctorRequestPage />, allowedRoles: ['admin'] },
-
-  { path: "/admin/patientDetails/table", component: <AdminPatientDetailsPage />, allowedRoles: ['admin'] },
+  { path: "/admin/doctorRequests/table", component: <AdminDoctorsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/patientDetails/table", component: <AdminPatientsNew />, allowedRoles: ['admin'] },
   { path: "/admin/patientdetailsForm/:id", component: <PatientDetailsForm />, allowedRoles: ['admin'] },
   { path: "/add/patient-register/", component: <AdminPatientRegisterForm />, allowedRoles: ['admin'] },
-
-  { path: "/admin/billingCode/table", component: <AdminBillingCodePage />, allowedRoles: ['admin'] },
+  { path: "/admin/billingCode/table", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/consultationCategory/table", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/settings", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
   { path: "/admin/doctorDetails/form/:id", component: <DoctorRequestForm />, allowedRoles: ['admin'] },
-  { path: "/admin/consultationCategory/table", component: <AdminConsultationCetgoryPage />, allowedRoles: ['admin'] },
   { path: "/add/consultationCategory", component: <AddConsultationCategoryForm />, allowedRoles: ['admin'] },
   { path: "/edit-category/:id", component: <EditConsultCategory />, allowedRoles: ['admin'] },
-
-
-
   { path: "/admin/register/form", component: <AdminModelPage />, allowedRoles: ['admin'] },
   { path: "/admin/details/table", component: <AdminModelTable />, allowedRoles: ['admin'] },
   { path: "/admin/detail-form/:id", component: <AdminDetailsForm />, allowedRoles: ['admin'] },
@@ -231,7 +233,7 @@ const userRoutes = [
 ];
 
 const authRoutes = [
-  { path: "/admin/login", component: <AdminLoginPage />, allowedRoles: ['patient'] },
+  { path: "/admin/login", component: <AdminLoginNew />, allowedRoles: ['patient'] },
 
   { path: "/doctor/login", component: <DoctorLoginPage />, allowedRoles: ['doctor'] },
   { path: "/doctor-2fa", component: <Doctor2faPage />, allowedRoles: ['doctor'] },
