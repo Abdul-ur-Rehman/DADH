@@ -24,6 +24,12 @@ import DoctorInboxPage from "pages/DoctorInbox/DoctorInboxPage";
 import SupportPage from "../pages/DoctorSupport/SupportPage";
 import BillingPage from "../pages/DoctorBilling/BillingPage";
 import PatientDetailForm from "../pages/DoctorConsultDetails/Modals/PatientDetailForm";
+import DoctorDashboard from "pages/DoctorDashboard/DoctorDashboard";
+import DoctorConsultDetailsNew from "pages/DoctorConsultDetails/DoctorConsultDetailsNew";
+import DoctorHistoryNew from "pages/DoctorHistory/DoctorHistoryNew";
+import DoctorBillingNew from "pages/DoctorBilling/DoctorBillingNew";
+import DoctorSettings from "pages/DoctorSettings/DoctorSettings";
+import DoctorInboxNew from "pages/DoctorInbox/DoctorInboxNew";
 
 // Profile
 import UserProfile from "../pages/Authentication/user-profile";
@@ -196,42 +202,19 @@ const userRoutes = [
 
 
   // DOCTOR
-
-  { path: "/doctor", component: <DoctorHomePage />, allowedRoles: ['doctor'] },
-  // { path: "/doctor/chat", component: <TRTCChat /> },
-  {
-    path: "/doctor/inbox", component: <DoctorInboxPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/consultHistory", component: <DoctortConsultHistorPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/myAccount", component: <DoctorMyAccountPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/billing", component: <BillingPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/support", component: <SupportPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/startConsult/:id", component: <DoctorStartConsultPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/startConsult/:id/details", component: <ConsultationDetailsPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/startConsult/:id/details/video", component: <DoctorVideoCallPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/startConsult/:id/details/Audio", component: <DoctorAudioCallPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/supportcard", component: <SupportPage />, allowedRoles: ['doctor']
-  },
-  {
-    path: "/doctor/billingpage", component: <BillingPage />, allowedRoles: ['doctor']
-  },
+  { path: "/doctor", component: <DoctorDashboard />, allowedRoles: ['doctor'] },
+  { path: "/doctor/inbox", component: <DoctorInboxNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/consultHistory", component: <DoctorHistoryNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/myAccount", component: <DoctorSettings />, allowedRoles: ['doctor'] },
+  { path: "/doctor/settings", component: <DoctorSettings />, allowedRoles: ['doctor'] },
+  { path: "/doctor/billing", component: <DoctorBillingNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/billingpage", component: <DoctorBillingNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/support", component: <SupportPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/startConsult/:id", component: <DoctorStartConsultPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/startConsult/:id/details", component: <DoctorConsultDetailsNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/startConsult/:id/details/video", component: <DoctorVideoCallPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/startConsult/:id/details/Audio", component: <DoctorAudioCallPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/supportcard", component: <SupportPage />, allowedRoles: ['doctor'] },
 
 
   // PATIENT
