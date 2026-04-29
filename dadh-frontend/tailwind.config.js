@@ -24,6 +24,13 @@ module.exports = {
     "./src/pages/DoctorSettings/**/*.{js,jsx}",
     "./src/pages/DoctorInbox/**/*.{js,jsx}",
     "./src/components/DoctorLayout/**/*.{js,jsx}",
+    "./src/pages/AdminHomeDashboard/**/*.{js,jsx}",
+    "./src/pages/AdminDoctorsNew/**/*.{js,jsx}",
+    "./src/pages/AdminPatientsNew/**/*.{js,jsx}",
+    "./src/pages/AdminConsultationsNew/**/*.{js,jsx}",
+    "./src/pages/AdminSettingsNew/**/*.{js,jsx}",
+    "./src/pages/AdminLoginNew/**/*.{js,jsx}",
+    "./src/components/AdminLayout/**/*.{js,jsx}",
   ],
 
   // Add `dadh-` prefix optional? No — kept simple. Conflicts with Bootstrap class
