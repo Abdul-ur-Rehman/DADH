@@ -11,7 +11,7 @@ useEffect(() => {
   const userRole = localStorage.getItem("userRole");
 
   if (isLoggedIn === "true" && userRole === "admin") {
-    navigate("/admin/doctorRequests/table");
+    navigate("/admin/doctor-requests/table");
   }
 }, []);
 
@@ -86,7 +86,7 @@ useEffect(() => {
       localStorage.setItem("isAdminLoggedIn", "true");
       localStorage.setItem("adminLevel", level);
 
-      navigate("/admin/doctorRequests/table");
+      navigate("/admin/doctor-requests/table");
     } else {
       setErrors({ general: "Invalid credentials. Please try again." });
     }

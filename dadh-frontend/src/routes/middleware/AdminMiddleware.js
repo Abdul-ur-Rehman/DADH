@@ -42,7 +42,6 @@ const AdminMiddleware = (props) => {
   // }
 
   const isAdmin = authUser?.role === "admin";
-  console.log("Is Admin:", isAdmin); // Debugging
 
   return (
     <Layout>

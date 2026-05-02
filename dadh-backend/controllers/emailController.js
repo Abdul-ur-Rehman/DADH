@@ -8,7 +8,14 @@ exports.sendEmail = async (req, res) => {
 
   // 2) Define API endpoint and API key
   const API_URL = "https://api.resend.com/emails";
-  const API_KEY = "re_SVm7sH4D_5zM7auZ2sDswUiEACZZQwecr";
+  const API_KEY = process.env.RESEND_API_KEY;
+
+  if (!API_KEY) {
+    return res.status(500).json({
+      status: "failed",
+      message: "Email service is not configured (RESEND_API_KEY missing).",
+    });
+  }
 
   try {
     // 3) Prepare the request payload

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { fieldEncryption } = require("mongoose-field-encryption");
 
 const patientSchema = new mongoose.Schema(
   {
@@ -96,10 +97,29 @@ const patientSchema = new mongoose.Schema(
       enum: [0, 1],
       default: 1, // 1 = active, 0 = inactive
     },
+    profileImage: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Field-level encryption for medical PII at rest.
+// NOTE: medicareNumber, phone, and DOB are intentionally NOT encrypted here even
+// though they are sensitive. The patient login uses Patient.findOne({ medicareNumber,
+// phone, DOB }) and Mongoose does not auto-encrypt query criteria — encrypting these
+// fields would break login. Phase 8 (compliance) will add hash-based search columns
+// (e.g. medicareNumberHash = sha256(value)) so we can encrypt the originals while still
+// supporting login lookups. Until then, address + zipCode are encrypted (most sensitive
+// non-query PII), and these three remain plaintext.
+patientSchema.plugin(fieldEncryption, {
+  fields: ["address", "zipCode"],
+  secret: process.env.ENCRYPTION_KEY,
+  saltGenerator: () => process.env.ENCRYPTION_SIGNING_KEY.slice(0, 16),
+});
+
 const Patient = new mongoose.model("Patient", patientSchema);
 module.exports = Patient;

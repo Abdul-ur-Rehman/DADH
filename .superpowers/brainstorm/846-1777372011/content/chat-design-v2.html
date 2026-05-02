@@ -1,0 +1,182 @@
+<h2>Chat Panel — Revised (Collapsible Tabs)</h2>
+<p class="subtitle">Option A with a collapse toggle. Click the arrow to hide/show the chat panel.</p>
+
+<div class="split">
+
+  <!-- Expanded state -->
+  <div class="mockup">
+    <div class="mockup-header">Expanded (default)</div>
+    <div class="mockup-body" style="padding:12px;background:#F0FDFA;font-family:system-ui">
+      <div style="height:260px;display:flex;gap:6px">
+        <!-- Sidebar -->
+        <div style="width:120px;background:#0D7377;border-radius:8px;padding:10px 0;display:flex;flex-direction:column;flex-shrink:0">
+          <div style="padding:0 10px 10px;border-bottom:1px solid rgba(255,255,255,0.15);margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:24px;height:24px;background:white;border-radius:5px;flex-shrink:0"></div>
+              <span style="color:white;font-size:9px;font-weight:700">DADH</span>
+            </div>
+          </div>
+          <div style="padding:0 8px;display:flex;flex-direction:column;gap:2px;flex:1">
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);border-radius:5px;padding:5px 6px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.9);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:white;font-size:8px;font-weight:600">Dashboard</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.4);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:rgba(255,255,255,0.65);font-size:8px">Inbox</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.4);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:rgba(255,255,255,0.65);font-size:8px">History</span>
+              <div style="margin-left:auto;background:#F59E0B;color:white;font-size:7px;font-weight:700;padding:1px 4px;border-radius:6px">3</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.4);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:rgba(255,255,255,0.65);font-size:8px">Billing</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.4);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:rgba(255,255,255,0.65);font-size:8px">Settings</span>
+            </div>
+          </div>
+          <div style="padding:8px 10px 0;border-top:1px solid rgba(255,255,255,0.15);margin-top:auto">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:22px;height:22px;background:rgba(255,255,255,0.2);border-radius:50%;flex-shrink:0"></div>
+              <div><div style="color:white;font-size:8px;font-weight:600">Dr. Smith</div><div style="color:rgba(255,255,255,0.5);font-size:7px">● Online</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Queue -->
+        <div style="flex:1;background:white;border:1px solid #D1E8E8;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:9px;font-weight:700;color:#111E1F;margin-bottom:2px">Patients Waiting</div>
+          <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:5px;padding:5px;display:flex;gap:5px;align-items:center">
+            <div style="width:22px;height:22px;background:#0D7377;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1"><div style="height:5px;background:#CBD5E1;border-radius:2px;width:70%;margin-bottom:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:50%"></div></div>
+            <div style="background:#0D7377;color:white;font-size:7px;padding:2px 6px;border-radius:3px">Accept</div>
+          </div>
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:5px;padding:5px;display:flex;gap:5px;align-items:center">
+            <div style="width:22px;height:22px;background:#94A3B8;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1"><div style="height:5px;background:#CBD5E1;border-radius:2px;width:60%;margin-bottom:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:40%"></div></div>
+            <div style="background:#E2E8F0;color:#64748B;font-size:7px;padding:2px 6px;border-radius:3px">Accept</div>
+          </div>
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:5px;padding:5px;display:flex;gap:5px;align-items:center">
+            <div style="width:22px;height:22px;background:#94A3B8;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1"><div style="height:5px;background:#CBD5E1;border-radius:2px;width:65%;margin-bottom:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:45%"></div></div>
+            <div style="background:#E2E8F0;color:#64748B;font-size:7px;padding:2px 6px;border-radius:3px">Accept</div>
+          </div>
+        </div>
+
+        <!-- Chat panel: expanded -->
+        <div style="width:120px;background:white;border:1px solid #D1E8E8;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0">
+          <!-- Tab bar + collapse button -->
+          <div style="display:flex;align-items:center;border-bottom:1px solid #D1E8E8;flex-shrink:0;background:#FAFFFE">
+            <div style="flex:1;padding:5px 0;text-align:center;font-size:7px;font-weight:700;color:#0D7377;border-bottom:2px solid #0D7377;margin-bottom:-1px">Clinical</div>
+            <div style="flex:1;padding:5px 0;text-align:center;font-size:7px;color:#64748B;position:relative">
+              Dispatch
+              <div style="position:absolute;top:4px;right:8px;width:5px;height:5px;background:#F59E0B;border-radius:50%"></div>
+            </div>
+            <!-- Collapse button -->
+            <div style="padding:0 6px;color:#94A3B8;font-size:10px;cursor:pointer;flex-shrink:0" title="Collapse chat">›</div>
+          </div>
+          <!-- Chat messages -->
+          <div style="flex:1;padding:6px;display:flex;flex-direction:column;gap:3px;overflow:hidden">
+            <div style="font-size:6px;color:#4B7172;margin-bottom:2px;font-weight:600">John M. — Active consultation</div>
+            <div style="background:#F0FDFA;border-radius:4px 4px 4px 0;padding:3px 5px;font-size:6px;color:#0D7377;max-width:85%">How are you feeling?</div>
+            <div style="background:#0D7377;border-radius:4px 4px 0 4px;padding:3px 5px;font-size:6px;color:white;max-width:85%;align-self:flex-end">Head hurts a lot</div>
+            <div style="background:#F0FDFA;border-radius:4px 4px 4px 0;padding:3px 5px;font-size:6px;color:#0D7377;max-width:85%">Since when?</div>
+          </div>
+          <!-- Input -->
+          <div style="padding:5px;border-top:1px solid #D1E8E8;flex-shrink:0">
+            <div style="background:#F8FFFE;border:1px solid #D1E8E8;border-radius:4px;padding:3px 5px;display:flex;gap:3px;align-items:center">
+              <div style="flex:1;height:4px;background:#E2E8F0;border-radius:2px"></div>
+              <div style="background:#0D7377;border-radius:3px;padding:2px 5px;font-size:6px;color:white;font-weight:600">Send</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Collapsed state -->
+  <div class="mockup">
+    <div class="mockup-header">Collapsed (more space for queue)</div>
+    <div class="mockup-body" style="padding:12px;background:#F0FDFA;font-family:system-ui">
+      <div style="height:260px;display:flex;gap:6px">
+        <!-- Sidebar -->
+        <div style="width:120px;background:#0D7377;border-radius:8px;padding:10px 0;display:flex;flex-direction:column;flex-shrink:0">
+          <div style="padding:0 10px 10px;border-bottom:1px solid rgba(255,255,255,0.15);margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:24px;height:24px;background:white;border-radius:5px;flex-shrink:0"></div>
+              <span style="color:white;font-size:9px;font-weight:700">DADH</span>
+            </div>
+          </div>
+          <div style="padding:0 8px;display:flex;flex-direction:column;gap:2px;flex:1">
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);border-radius:5px;padding:5px 6px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.9);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:white;font-size:8px;font-weight:600">Dashboard</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.4);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:rgba(255,255,255,0.65);font-size:8px">Inbox</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px">
+              <div style="width:12px;height:12px;background:rgba(255,255,255,0.4);border-radius:2px;flex-shrink:0"></div>
+              <span style="color:rgba(255,255,255,0.65);font-size:8px">History</span>
+              <div style="margin-left:auto;background:#F59E0B;color:white;font-size:7px;font-weight:700;padding:1px 4px;border-radius:6px">3</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Queue — now wider -->
+        <div style="flex:1;background:white;border:1px solid #D1E8E8;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:9px;font-weight:700;color:#111E1F;margin-bottom:2px">Patients Waiting</div>
+          <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:5px;padding:5px;display:flex;gap:5px;align-items:center">
+            <div style="width:22px;height:22px;background:#0D7377;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1">
+              <div style="height:5px;background:#CBD5E1;border-radius:2px;width:70%;margin-bottom:2px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:50%"></div>
+            </div>
+            <div style="font-size:7px;color:#4B7172;margin-right:4px">Video • 3 min ago</div>
+            <div style="background:#0D7377;color:white;font-size:7px;padding:2px 6px;border-radius:3px">Accept</div>
+          </div>
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:5px;padding:5px;display:flex;gap:5px;align-items:center">
+            <div style="width:22px;height:22px;background:#94A3B8;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1">
+              <div style="height:5px;background:#CBD5E1;border-radius:2px;width:60%;margin-bottom:2px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:40%"></div>
+            </div>
+            <div style="font-size:7px;color:#4B7172;margin-right:4px">Audio • 5 min ago</div>
+            <div style="background:#E2E8F0;color:#64748B;font-size:7px;padding:2px 6px;border-radius:3px">Accept</div>
+          </div>
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:5px;padding:5px;display:flex;gap:5px;align-items:center">
+            <div style="width:22px;height:22px;background:#94A3B8;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1">
+              <div style="height:5px;background:#CBD5E1;border-radius:2px;width:65%;margin-bottom:2px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:45%"></div>
+            </div>
+            <div style="font-size:7px;color:#4B7172;margin-right:4px">Chat • 8 min ago</div>
+            <div style="background:#E2E8F0;color:#64748B;font-size:7px;padding:2px 6px;border-radius:3px">Accept</div>
+          </div>
+        </div>
+
+        <!-- Chat panel: collapsed to thin strip -->
+        <div style="width:28px;background:white;border:1px solid #D1E8E8;border-radius:8px;display:flex;flex-direction:column;align-items:center;overflow:hidden;flex-shrink:0">
+          <!-- Expand button -->
+          <div style="padding:6px 0;color:#0D7377;font-size:11px;font-weight:700;cursor:pointer;border-bottom:1px solid #D1E8E8;width:100%;text-align:center">‹</div>
+          <!-- Rotated label -->
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative">
+            <span style="font-size:7px;font-weight:600;color:#4B7172;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1px">CHAT</span>
+          </div>
+          <!-- Unread dot -->
+          <div style="width:8px;height:8px;background:#F59E0B;border-radius:50%;margin-bottom:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="text-align:center;margin-top:16px;font-size:13px;color:#4B7172;">
+  The <strong>›</strong> button collapses the chat to a slim strip. The <strong>‹</strong> button (+ unread dot) expands it back. State saved in localStorage.
+</p>

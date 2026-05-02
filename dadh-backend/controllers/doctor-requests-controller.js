@@ -185,11 +185,14 @@ const getCheckProviderNumber = async (req, res) => {
   const { isActive } = req.body;
 
   try {
-    const updated = await DoctorRequest.findByIdAndUpdate(
+    const updated = await Doctor.findByIdAndUpdate(
       id,
       { isActive },
       { new: true }
     );
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
     res.json({ success: true, data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -266,10 +269,10 @@ const approveDoctorRequestById = async (req, res) => {
     // Update the doctor and approve
     const updatedDoctor = await Doctor.findByIdAndUpdate(
       id,
-      { ...updateData, isActive: true }, // Make sure to includehere
+      { ...updateData, isApproved: true, status: 1 },
       { new: true }
     ).select(
-      'name surname email phone city state doctorType qualification isActive isSignatureProvided signature startDate isHomeVisit workType isOnline isConsulting activeConsultationId consultedPatients prescriberNumber providerNumber'
+      'name surname email phone city state doctorType qualification isApproved status isSignatureProvided signature startDate isHomeVisit workType isOnline isConsulting activeConsultationId consultedPatients prescriberNumber providerNumber'
     );
 
     if (!updatedDoctor) {

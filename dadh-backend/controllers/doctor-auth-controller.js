@@ -147,10 +147,17 @@ const login = async (req, res, next) => {
       });
     }
 
+    if (!doctor.isApproved) {
+      return res.status(403).json({
+        state: false,
+        message: "Your account is pending admin approval. You will be notified once approved.",
+      });
+    }
+
     if (doctor.status === 0) {
       return res.status(403).json({
         state: false,
-        message: "Access denied. Your account has been disabled by admin.",
+        message: "Your account has been disabled by admin. Please contact support.",
       });
     }
 
@@ -203,8 +210,6 @@ const login = async (req, res, next) => {
         prescriberNumber: doctor.prescriberNumber,
         providerNumber: doctor.providerNumber,
         lastLogin: doctor.lastLogin,
-        otp: doctor.otp,
-        otpExpiry: doctor.otpExpiry,
       },
     });
   } catch (err) {
@@ -299,13 +304,21 @@ const resendOtp = async (req, res, next) => {
     doctor.otpExpiry = expiry;
     await doctor.save();
 
-    // TODO: Integrate SMS service (Twilio or other)
-    console.log(`Resent OTP for Doctor ${doctor.phone}: ${newOtp}`);
+    // Send OTP via SMS
+    const phoneToSend = doctor.phone.startsWith("+") ? doctor.phone : "+" + doctor.phone;
+    try {
+      await sendSms({
+        to: phoneToSend,
+        body: `Your login OTP is ${newOtp}. It is valid for 5 minutes.`,
+      });
+
+    } catch (smsErr) {
+      console.error("SMS sending failed:", smsErr.message);
+    }
 
     res.status(200).json({
       state: true,
       message: "OTP resent successfully",
-      otp: newOtp, // ⚠️ Only for testing, remove in production
     });
   } catch (err) {
     console.error("Resend OTP error:", err);

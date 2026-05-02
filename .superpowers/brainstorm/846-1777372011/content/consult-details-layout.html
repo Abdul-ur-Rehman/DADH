@@ -1,0 +1,197 @@
+<h2>Consultation Details — Layout</h2>
+<p class="subtitle">Doctor's main working page during an active consultation. Needs to show patient info, notes, prescriptions, medications, and action buttons.</p>
+
+<div class="cards">
+
+  <!-- Option A: Top header + two columns -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F0FDFA;padding:12px;font-family:system-ui">
+      <div style="height:240px;display:flex;flex-direction:column;gap:5px">
+        <!-- Patient header bar -->
+        <div style="background:#0D7377;border-radius:7px;padding:8px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <div style="width:32px;height:32px;background:rgba(255,255,255,0.25);border-radius:50%;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="height:7px;background:rgba(255,255,255,0.8);border-radius:3px;width:100px;margin-bottom:3px"></div>
+            <div style="height:5px;background:rgba(255,255,255,0.4);border-radius:3px;width:70px"></div>
+          </div>
+          <div style="display:flex;gap:4px">
+            <div style="background:rgba(255,255,255,0.2);border-radius:4px;padding:4px 8px;font-size:8px;color:white">📞</div>
+            <div style="background:rgba(255,255,255,0.2);border-radius:4px;padding:4px 8px;font-size:8px;color:white">📹</div>
+            <div style="background:#EF4444;border-radius:4px;padding:4px 8px;font-size:8px;color:white;font-weight:600">Stop</div>
+          </div>
+        </div>
+        <!-- Two columns -->
+        <div style="flex:1;display:flex;gap:5px;overflow:hidden">
+          <!-- Left: notes + AI scribe -->
+          <div style="flex:1.4;display:flex;flex-direction:column;gap:4px">
+            <div style="background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px;flex:1">
+              <div style="font-size:8px;color:#4B7172;font-weight:600;margin-bottom:4px">AI SCRIBE NOTES</div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:3px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:85%;margin-bottom:3px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:70%;margin-bottom:3px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:90%"></div>
+            </div>
+            <div style="background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px">
+              <div style="font-size:8px;color:#4B7172;font-weight:600;margin-bottom:4px">MEDICATIONS</div>
+              <div style="display:flex;gap:3px">
+                <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:3px 5px;font-size:7px;color:#0D7377">Amoxicillin 500mg</div>
+                <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:3px 5px;font-size:7px;color:#0D7377">+ Add</div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: patient info + conditions + actions -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+            <div style="background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px">
+              <div style="font-size:8px;color:#4B7172;font-weight:600;margin-bottom:4px">PATIENT INFO</div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+                <span style="font-size:7px;color:#64748B">DOB</span><span style="font-size:7px;font-weight:600;color:#111E1F">12 Mar 1985</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+                <span style="font-size:7px;color:#64748B">Type</span><span style="font-size:7px;font-weight:600;color:#111E1F">Video Call</span>
+              </div>
+              <div style="display:flex;justify-content:space-between">
+                <span style="font-size:7px;color:#64748B">Category</span><span style="font-size:7px;font-weight:600;color:#111E1F">General</span>
+              </div>
+            </div>
+            <div style="background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px">
+              <div style="font-size:8px;color:#4B7172;font-weight:600;margin-bottom:4px">CONDITIONS</div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:3px"></div>
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;width:75%"></div>
+            </div>
+            <div style="background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px">
+              <div style="font-size:8px;color:#4B7172;font-weight:600;margin-bottom:4px">QUICK ACTIONS</div>
+              <div style="display:flex;flex-wrap:wrap;gap:3px">
+                <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:2px 5px;font-size:7px;color:#0D7377">Refer</div>
+                <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:2px 5px;font-size:7px;color:#0D7377">Certify</div>
+                <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:2px 5px;font-size:7px;color:#0D7377">Bill</div>
+                <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:2px 5px;font-size:7px;color:#0D7377">Investigate</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Header strip + two columns</h3>
+      <p>Patient info in a teal header bar at top with call/stop buttons. Left column: notes + medications. Right column: patient details, conditions, actions.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Three column -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F0FDFA;padding:12px;font-family:system-ui">
+      <div style="height:240px;display:flex;flex-direction:column;gap:5px">
+        <!-- Top bar -->
+        <div style="background:white;border:1px solid #D1E8E8;border-radius:7px;padding:7px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="width:26px;height:26px;background:#0D7377;border-radius:50%;flex-shrink:0"></div>
+          <div style="flex:1"><div style="height:6px;background:#CBD5E1;border-radius:3px;width:90px;margin-bottom:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:3px;width:60px"></div></div>
+          <div style="display:flex;gap:3px">
+            <div style="border:1px solid #D1E8E8;border-radius:4px;padding:3px 6px;font-size:8px;color:#4B7172">📞</div>
+            <div style="border:1px solid #D1E8E8;border-radius:4px;padding:3px 6px;font-size:8px;color:#4B7172">📹</div>
+            <div style="border:1px solid #D1E8E8;border-radius:4px;padding:3px 6px;font-size:8px;color:#4B7172">Refer</div>
+            <div style="border:1px solid #D1E8E8;border-radius:4px;padding:3px 6px;font-size:8px;color:#4B7172">Certify</div>
+            <div style="background:#EF4444;border-radius:4px;padding:3px 6px;font-size:8px;color:white;font-weight:600">Stop</div>
+          </div>
+        </div>
+        <!-- Three columns -->
+        <div style="flex:1;display:flex;gap:4px;overflow:hidden">
+          <!-- Col 1: Patient -->
+          <div style="width:90px;background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px;flex-shrink:0">
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:5px">PATIENT</div>
+            <div style="font-size:7px;color:#64748B;margin-bottom:2px">DOB</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:5px"></div>
+            <div style="font-size:7px;color:#64748B;margin-bottom:2px">Gender</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:5px"></div>
+            <div style="font-size:7px;color:#64748B;margin-bottom:2px">Phone</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:5px"></div>
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:3px;margin-top:4px">CONDITIONS</div>
+            <div style="background:#FEF3C7;border-radius:3px;padding:2px 4px;font-size:6px;color:#92400E;margin-bottom:2px">Hypertension</div>
+          </div>
+          <!-- Col 2: Notes (widest) -->
+          <div style="flex:1;background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px">
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:4px">AI SCRIBE NOTES</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:3px"></div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;width:85%;margin-bottom:3px"></div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:3px"></div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;width:70%;margin-bottom:8px"></div>
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:3px">MEDICATIONS</div>
+            <div style="display:flex;gap:2px;flex-wrap:wrap">
+              <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:2px 4px;font-size:6px;color:#0D7377">Amoxicillin 500mg</div>
+              <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:3px;padding:2px 4px;font-size:6px;color:#0D7377">+ Add</div>
+            </div>
+          </div>
+          <!-- Col 3: History -->
+          <div style="width:85px;background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px;flex-shrink:0">
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:5px">PAST CONSULTS</div>
+            <div style="background:#F8FFFE;border:1px solid #E2E8F0;border-radius:4px;padding:4px;margin-bottom:3px">
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:2px"></div>
+              <div style="height:3px;background:#E2E8F0;border-radius:2px;width:70%"></div>
+            </div>
+            <div style="background:#F8FFFE;border:1px solid #E2E8F0;border-radius:4px;padding:4px;margin-bottom:3px">
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:2px"></div>
+              <div style="height:3px;background:#E2E8F0;border-radius:2px;width:60%"></div>
+            </div>
+            <div style="background:#F8FFFE;border:1px solid #E2E8F0;border-radius:4px;padding:4px">
+              <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:2px"></div>
+              <div style="height:3px;background:#E2E8F0;border-radius:2px;width:80%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Three columns (patient | notes | history)</h3>
+      <p>All actions in a top bar. Three columns: patient info, main notes workspace, past consultations. Everything visible at once — no scrolling needed.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Tabbed sections -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F0FDFA;padding:12px;font-family:system-ui">
+      <div style="height:240px;display:flex;flex-direction:column;gap:5px">
+        <!-- Patient header -->
+        <div style="background:white;border:1px solid #D1E8E8;border-radius:7px;padding:7px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="width:26px;height:26px;background:#0D7377;border-radius:50%;flex-shrink:0"></div>
+          <div style="flex:1"><div style="height:6px;background:#CBD5E1;border-radius:3px;width:90px;margin-bottom:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:3px;width:60px"></div></div>
+          <div style="display:flex;gap:3px">
+            <div style="border:1px solid #D1E8E8;border-radius:4px;padding:3px 6px;font-size:8px;color:#4B7172">📞</div>
+            <div style="border:1px solid #D1E8E8;border-radius:4px;padding:3px 6px;font-size:8px;color:#4B7172">📹</div>
+            <div style="background:#EF4444;border-radius:4px;padding:3px 6px;font-size:8px;color:white;font-weight:600">Stop</div>
+          </div>
+        </div>
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;border-bottom:2px solid #D1E8E8;flex-shrink:0">
+          <div style="padding:5px 10px;font-size:8px;color:#0D7377;font-weight:700;border-bottom:2px solid #0D7377;margin-bottom:-2px">Notes</div>
+          <div style="padding:5px 10px;font-size:8px;color:#64748B">Medications</div>
+          <div style="padding:5px 10px;font-size:8px;color:#64748B">Conditions</div>
+          <div style="padding:5px 10px;font-size:8px;color:#64748B">History</div>
+          <div style="padding:5px 10px;font-size:8px;color:#64748B">Actions</div>
+        </div>
+        <!-- Tab content -->
+        <div style="flex:1;display:flex;gap:5px;overflow:hidden">
+          <div style="flex:1;background:white;border:1px solid #D1E8E8;border-radius:6px;padding:8px">
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:5px">AI SCRIBE NOTES</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:3px"></div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;width:85%;margin-bottom:3px"></div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:3px"></div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;width:70%"></div>
+          </div>
+          <div style="width:90px;background:white;border:1px solid #D1E8E8;border-radius:6px;padding:7px;flex-shrink:0">
+            <div style="font-size:7px;color:#4B7172;font-weight:600;margin-bottom:4px">PATIENT</div>
+            <div style="font-size:6px;color:#64748B;margin-bottom:1px">DOB</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:4px"></div>
+            <div style="font-size:6px;color:#64748B;margin-bottom:1px">Gender</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px;margin-bottom:4px"></div>
+            <div style="font-size:6px;color:#64748B;margin-bottom:1px">Phone</div>
+            <div style="height:4px;background:#E2E8F0;border-radius:2px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Patient header + tabs</h3>
+      <p>Patient card + call controls always visible at top. Content below switches between tabs: Notes, Medications, Conditions, History, Actions. Clean but requires switching between tabs.</p>
+    </div>
+  </div>
+
+</div>

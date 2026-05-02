@@ -1,164 +1,224 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  Box,
-  CardContent,
-  Typography,
-  Button,
-  Divider,
-  Container,
-  Stack,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import logoDark from "../../assets/images/logo-dark.png";
 
-const ConsultationCategorySelector = () => {
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api";
+
+const T = {
+  teal:      "#0D7377",
+  tealDark:  "#0A5F62",
+  tealLight: "#F0FDFA",
+  border:    "#D1E8E8",
+  fg:        "#111E1F",
+  muted:     "#4B7172",
+  mutedBg:   "#E6F4F4",
+  white:     "#ffffff",
+};
+
+const STYLES = `
+  @keyframes cs-fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+function CategoryCard({ category, isSelected, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        border: `2px solid ${isSelected ? T.teal : hovered ? T.teal : T.border}`,
+        borderRadius: 12,
+        padding: "18px 20px",
+        cursor: "pointer",
+        background: isSelected ? T.tealLight : hovered ? "#F8FFFE" : T.white,
+        transition: "all 0.15s",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 14,
+      }}
+    >
+      <div style={{
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        background: isSelected ? T.mutedBg : "#F1F5F9",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 20,
+        flexShrink: 0,
+      }}>
+        🩺
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 15, color: isSelected ? T.teal : T.fg }}>
+          {category.category}
+        </p>
+        {category.notes && (
+          <p style={{ margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 }}>
+            {category.notes}
+          </p>
+        )}
+      </div>
+      <div style={{
+        width: 20,
+        height: 20,
+        borderRadius: "50%",
+        border: `2px solid ${isSelected ? T.teal : T.border}`,
+        background: isSelected ? T.teal : "transparent",
+        flexShrink: 0,
+        marginTop: 2,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        {isSelected && <div style={{ width: 8, height: 8, borderRadius: "50%", background: T.white }} />}
+      </div>
+    </div>
+  );
+}
+
+export default function ConsultationCategorySelector() {
   const navigate = useNavigate();
-  const REACT_APP_BACKEND_URL = "http://localhost:5001/api";
+  const [categories, setCategories]           = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [loading, setLoading]                 = useState(true);
+  const [blocked, setBlocked]                 = useState(false);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("ispatientLoggedIn");
-    const userRole = localStorage.getItem("userRole");
-
-    if (isLoggedIn === "true" && userRole === "patient") {
-      navigate("/patient");
+    const patient = (() => { try { return JSON.parse(localStorage.getItem("patientData"))?.data || {} } catch { return {} } })();
+    const patientId = patient._id;
+    if (patientId) {
+      fetch(`${BASE_URL}/consultations/getConsulationByPatient/${patientId}`)
+        .then(r => r.json())
+        .then(res => {
+          const list = res.data || [];
+          if (list.some(c => !c.isCompleted)) setBlocked(true);
+        })
+        .catch(() => {});
     }
-  }, []);
-
-  useEffect(() => {
-    const isPatientLoggedIn = localStorage.getItem("isPatientLoggedIn");
-    setIsLoggedIn(isPatientLoggedIn === "true"); // convert string to boolean
-  }, []);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch(
-          `${REACT_APP_BACKEND_URL}/consultationCategory/getAll`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const result = await response.json();
-        if (response.ok) {
-          setCategories(result.data);
-        } else {
-          console.log("Error:", result.message);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-    fetchCategories();
+    fetch(`${BASE_URL}/consultationCategory/getAll`)
+      .then((r) => r.json())
+      .then((json) => { if (json.data) setCategories(json.data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const handleNext = () => {
-    if (selectedCategory) {
-      localStorage.setItem("selectedCategory", selectedCategory);
-      navigate("/patient/descriptions", { state: { selectedCategory } });
-    }
-  };
-
-  const handleLogin = () => {
-    navigate("/patient/login");
+    if (!selectedCategory) return;
+    localStorage.setItem("selectedCategory", selectedCategory);
+    navigate("/patient/descriptions", { state: { selectedCategory } });
   };
 
   return (
-    <Box p={3} display="flex" justifyContent="center" bgcolor="#f5f5f5" minHeight="100vh">
-      <Container maxWidth="sm">
-        <Card sx={{ borderRadius: 3, boxShadow: 4 }}>
-          <Box sx={{ backgroundColor: "#1976d2", p: 3, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
-            <Typography variant="h5" color="white" textAlign="center">
-              Patient Consultation
-            </Typography>
-          </Box>
-          <CardContent>
-            {/* Login Button */}
-            {!isLoggedIn && (
-              <>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleLogin}
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  Login
-                </Button>
+    <div
+      className="dadh-tw-root"
+      style={{ minHeight: "100vh", background: "#F8FFFE", padding: "32px 16px" }}
+    >
+      <style>{STYLES}</style>
 
-                {/* OR Divider */}
-                <Box display="flex" alignItems="center" mt={3} mb={2}>
-                  <Divider sx={{ flexGrow: 3, borderColor: "#000000" }} />
-                  <Typography
-                    variant="subtitle2"
-                    color="primary"
-                    textAlign="center"
-                    sx={{ mx: 2 }}
-                  >
-                    OR
-                  </Typography>
-                  <Divider sx={{ flexGrow: 3, borderColor: "#000000" }} />
-                </Box>
-              </>
-            )}
+      <div style={{ maxWidth: 620, margin: "0 auto", animation: "cs-fade-up 0.4s ease-out both" }}>
+
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img src={logoDark} alt="DADH" style={{ height: 40, marginBottom: 20 }} />
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: T.fg, margin: "0 0 8px" }}>
+            Book a Consultation
+          </h1>
+          <p style={{ fontSize: 14, color: T.muted, margin: 0, lineHeight: 1.6 }}>
+            Select the category that best matches your needs.
+          </p>
+        </div>
+
+        {blocked && (
+          <div style={{
+            background: "#FEF3C7", border: "1px solid #F59E0B", borderRadius: 12,
+            padding: "20px 24px", marginBottom: 24, textAlign: "center",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
+            <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 15, color: "#92400E" }}>
+              You already have a consultation in progress
+            </p>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#78350F" }}>
+              Please wait for your current consultation to be completed before booking a new one.
+            </p>
+            <button
+              onClick={() => navigate("/patient")}
+              style={{
+                background: "#0D7377", color: "white", border: "none",
+                borderRadius: 8, padding: "9px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer",
+              }}
+            >
+              Back to Home
+            </button>
+          </div>
+        )}
 
 
-            {/* Category Title with Divider */}
-            <Box display="flex" alignItems="center" mt={3} mb={2}>
-              <Typography variant="subtitle2" color="black" textAlign="center">
-                Select a category to continue
-              </Typography>
-            </Box>
-            {/* Category Cards */}
-            <Stack spacing={2}>
-              {categories.map((category) => (
-                <Card
-                  key={category._id}
-                  onClick={() => setSelectedCategory(category.key)}
-                  sx={{
-                    cursor: "pointer",
-                    border: selectedCategory === category.key ? "2px solid #1976d2" : "1px solid #ddd",
-                    boxShadow: selectedCategory === category.key ? 3 : 1,
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      boxShadow: 3,
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <Typography variant="h6">{category.category}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {category.notes}
-                    </Typography>
-                  </CardContent>
-                </Card>
+        {/* Category list — hidden when patient has active consultation */}
+        {!blocked && <div style={{
+          background: T.white,
+          border: `1px solid ${T.border}`,
+          borderRadius: 16,
+          padding: "24px",
+          boxShadow: "0 2px 12px rgba(13,115,119,0.07)",
+          marginBottom: 24,
+        }}>
+          <p style={{ margin: "0 0 16px", fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            Select a category
+          </p>
+
+          {loading ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{ height: 74, background: "#F0FDFA", borderRadius: 12, opacity: 0.6 }} />
               ))}
-            </Stack>
+            </div>
+          ) : categories.length === 0 ? (
+            <p style={{ textAlign: "center", color: T.muted, fontSize: 14, padding: "24px 0" }}>
+              No categories available at the moment.
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {categories.map((cat) => (
+                <CategoryCard
+                  key={cat._id}
+                  category={cat}
+                  isSelected={selectedCategory === cat.key}
+                  onClick={() => setSelectedCategory(cat.key)}
+                />
+              ))}
+            </div>
+          )}
+        </div>}
 
-            {/* Next Button */}
-            {selectedCategory && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleNext}
-                fullWidth
-                sx={{ mt: 3 }}
-              >
-                Next
-              </Button>
-            )}
-
-
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+        {/* Next button */}
+        {!blocked && <button
+          onClick={handleNext}
+          disabled={!selectedCategory}
+          style={{
+            width: "100%",
+            padding: "14px",
+            background: selectedCategory ? T.teal : "#D1E8E8",
+            color: selectedCategory ? T.white : T.muted,
+            border: "none",
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: selectedCategory ? "pointer" : "not-allowed",
+            fontFamily: "inherit",
+            transition: "background 0.15s, color 0.15s",
+          }}
+          onMouseEnter={(e) => { if (selectedCategory) e.target.style.background = T.tealDark; }}
+          onMouseLeave={(e) => { if (selectedCategory) e.target.style.background = T.teal; }}
+        >
+          Next: Describe Your Symptoms →
+        </button>}
+      </div>
+    </div>
   );
-};
-
-export default ConsultationCategorySelector;
+}

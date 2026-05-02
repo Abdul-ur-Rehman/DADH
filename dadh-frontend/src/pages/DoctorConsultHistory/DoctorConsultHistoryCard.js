@@ -393,8 +393,8 @@ import { useNavigate } from "react-router-dom";
 import { Row, Col } from "reactstrap";
 import { Checkbox } from "@mui/material";
 import "./DoctorConsultHistoryCard.css";
-import CertifyModal from "../DoctorConsultDetails/Modals/CertifyModal";
-import BillingModal from "../DoctorConsultDetails/Modals/BillingModal";
+import CertifyConsultModal from "../DoctorConsultDetails/Modals/CertifyConsultModal";
+import BillingConsultModal from "../DoctorConsultDetails/Modals/BillingConsultModal";
 import { PhoneCallIcon, VideoIcon, MessageSquareIcon } from "lucide-react";
 
 const DoctorConsultHistoryCard = () => {
@@ -593,18 +593,26 @@ const DoctorConsultHistoryCard = () => {
                     onClick={() => togglePatient(index)}
                     style={{
                       cursor: "pointer",
-                      backgroundColor: "#007bff",
-                      color: "white",
+                      backgroundColor: patient.requestedCertificate?.length > 0 && !patient.certificates?.length ? "#fff3e0" : "#007bff",
+                      color: patient.requestedCertificate?.length > 0 && !patient.certificates?.length ? "#5d4037" : "white",
                       padding: "10px",
-                      border: "1px solid #ddd",
+                      border: patient.requestedCertificate?.length > 0 && !patient.certificates?.length ? "2px solid #fb8c00" : "1px solid #ddd",
                       marginBottom: "10px",
                       borderRadius: "5px"
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         {getIcon(patient?.type)}{" "}
                         <strong>{patient?.patientName}</strong> - {patient?.consultationCategoryName}
+                        {patient.requestedCertificate?.length > 0 && !patient.certificates?.length && (
+                          <span style={{
+                            background: "#fb8c00", color: "#fff", fontSize: 11, fontWeight: 700,
+                            borderRadius: 20, padding: "2px 10px", whiteSpace: "nowrap", marginLeft: 4,
+                          }}>
+                            📋 Certificate Requested
+                          </span>
+                        )}
                       </div>
                       <div>{expandedIndex === index ? "▲" : "▼"}</div>
                     </div>
@@ -669,16 +677,19 @@ const DoctorConsultHistoryCard = () => {
       </Row>
 
       {/* Modals */}
-      <CertifyModal
-        show={showCertifyModal}
-        handleClose={() => setShowCertifyModal(false)}
-        patient={selectedPatient}
-      />
-      <BillingModal
-        show={showBillingModal}
-        handleClose={() => setShowBillingModal(false)}
-        patient={selectedPatient}
-      />
+      {showCertifyModal && selectedPatient && (
+        <CertifyConsultModal
+          consultationId={selectedPatient._id}
+          patient={{ _id: selectedPatient.patientId, name: selectedPatient.patientName }}
+          onClose={() => { setShowCertifyModal(false); setSelectedPatient(null) }}
+        />
+      )}
+      {showBillingModal && selectedPatient && (
+        <BillingConsultModal
+          consultationId={selectedPatient._id}
+          onClose={() => { setShowBillingModal(false); setSelectedPatient(null) }}
+        />
+      )}
     </div>
   );
 };

@@ -23,7 +23,7 @@ const ChatComponent = ({
 
   const [showChat, setShowChat] = useState(true);
   const [currentChannelUrl, setCurrentChannelUrl] = useState("");
-  const APP_ID = "0C9C0093-D483-46BC-9D98-938BE5FE8A84";
+  const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID;
 
   const { stores } = useSendbirdStateContext();
   const sb = stores?.sdkStore?.sdk;
@@ -97,10 +97,11 @@ const ChatComponent = ({
         >
           <GroupChannelList
             selectedChannelUrl={currentChannelUrl}
-            onChannelCreated={(channel) => setCurrentChannelUrl(channel.url)}
+            onChannelCreated={(channel) => { if (channel) setCurrentChannelUrl(channel.url) }}
             onChannelSelect={(channel) => {
-              setCurrentChannelUrl(channel.url);
-              setShowChat(true);
+              if (!channel) return
+              setCurrentChannelUrl(channel.url)
+              setShowChat(true)
             }}
           />
         </div>

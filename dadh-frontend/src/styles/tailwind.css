@@ -1,0 +1,88 @@
+/*
+ * DADH design tokens + Tailwind base layer.
+ *
+ * IMPORTANT: Tailwind's preflight CSS reset is DISABLED in tailwind.config.js
+ * to avoid breaking existing Bootstrap / Reactstrap / MUI pages. The new UI
+ * components in src/components/ui/ are written to not depend on the reset.
+ *
+ * All variables are prefixed with --dadh- to avoid colliding with any
+ * theme variables that Bootstrap, MUI or mdbreact might define.
+ */
+
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ─── DADH brand color tokens — Option B "Modern Healthcare" teal palette ─── */
+
+  /* Primary — dark teal #0D7377 */
+  --dadh-primary: 182 80% 26%;
+  --dadh-primary-foreground: 0 0% 100%;
+
+  /* Urgency — red #EF4444 (logo phone receiver) */
+  --dadh-destructive: 0 84% 60%;
+  --dadh-destructive-foreground: 0 0% 100%;
+
+  /* Success / health — green #22C55E */
+  --dadh-success: 142 70% 45%;
+  --dadh-success-foreground: 0 0% 100%;
+
+  /* Surfaces */
+  --dadh-background: 166 60% 99%;          /* #FAFFFE — off-white with teal breath */
+  --dadh-foreground: 200 15% 12%;          /* near-black, slight cool tone */
+
+  --dadh-card: 0 0% 100%;
+  --dadh-card-foreground: 200 15% 12%;
+
+  /* Neutrals — teal-tinted */
+  --dadh-secondary: 166 30% 94%;
+  --dadh-secondary-foreground: 182 50% 20%;
+
+  --dadh-muted: 166 25% 94%;               /* #F0FDFA-ish teal surface */
+  --dadh-muted-foreground: 180 10% 45%;
+
+  /* Accent — bright teal #14B8A6 (hover states, ghost buttons) */
+  --dadh-accent: 174 72% 40%;
+  --dadh-accent-foreground: 0 0% 100%;
+
+  --dadh-border: 166 20% 88%;              /* light teal-tinted border */
+  --dadh-input: 166 20% 88%;
+  --dadh-ring: 182 80% 26%;               /* matches primary */
+
+  --dadh-radius: 0.5rem;
+}
+
+/*
+ * Minimal scoped reset — applied only to elements inside a .dadh-tw-root container.
+ * This gives new pages the cleanup they need without affecting legacy pages.
+ *
+ * Wrap any page using the new components in <div className="dadh-tw-root">...</div>.
+ */
+.dadh-tw-root,
+.dadh-tw-root *,
+.dadh-tw-root *::before,
+.dadh-tw-root *::after {
+  box-sizing: border-box;
+}
+
+.dadh-tw-root {
+  font-family: theme("fontFamily.sans");
+  color: hsl(var(--dadh-foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dadh-tw-root button {
+  font-family: inherit;
+}
+
+.dadh-tw-root input,
+.dadh-tw-root textarea,
+.dadh-tw-root select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}

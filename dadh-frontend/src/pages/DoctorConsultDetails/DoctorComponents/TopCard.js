@@ -5,8 +5,8 @@ import { Card } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import PatientDetailForm from "../Modals/PatientDetailForm";
 import ReferModal from "../Modals/ReferModal";
-import CertifyModal from "../Modals/CertifyModal";
-import BillingModal from "../Modals/BillingModal";
+import CertifyConsultModal from "../Modals/CertifyConsultModal";
+import BillingConsultModal from "../Modals/BillingConsultModal";
 import InvestigateModal from "../Modals/InvestigateModal";
 import AddFamilyModal from "../Modals/AddFamilyModal";
 import { Divider } from "@mui/material";
@@ -83,7 +83,7 @@ const TopCard = ({ data }) => {
   //     alert("Consultation ID not found. Cannot start video call.");
   //     return;
   //   }
-  //   const doctorCallUrl = `${window.location.origin}/doctor/startConsult/${consultationId}/details/video`;
+  //   const doctorCallUrl = `${window.location.origin}/doctor/start-consult/${consultationId}/details/video`;
   //   const windowFeatures = `width=${window.innerWidth * 0.8},height=${window.innerHeight * 0.8},left=${window.innerWidth * 0.1},top=${window.innerHeight * 0.1},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`;
   //   window.open(doctorCallUrl, "DoctorVideoCallWindow", windowFeatures);
   // };
@@ -94,7 +94,7 @@ const TopCard = ({ data }) => {
   //     alert("Consultation ID not found. Cannot start audio call.");
   //     return;
   //   }
-  //   const doctorCallUrl = `${window.location.origin}/doctor/startConsult/${consultationId}/details/Audio`;
+  //   const doctorCallUrl = `${window.location.origin}/doctor/start-consult/${consultationId}/details/audio`;
   //   const windowFeatures = `width=${window.innerWidth * 0.8},height=${window.innerHeight * 0.8},left=${window.innerWidth * 0.1},top=${window.innerHeight * 0.1},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`;
   //   window.open(doctorCallUrl, "AudioCallWindow", windowFeatures);
   // };
@@ -106,7 +106,7 @@ const handleStartVideoCall = () => {
     return;
   }
 
-  const doctorCallUrl = `${window.location.origin}/doctor/startConsult/${consultationId}/details/video`;
+  const doctorCallUrl = `${window.location.origin}/doctor/start-consult/${consultationId}/details/video`;
   const windowFeatures = `width=${window.innerWidth * 0.8},height=${window.innerHeight * 0.8},left=${window.innerWidth * 0.1},top=${window.innerHeight * 0.1},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`;
   window.open(doctorCallUrl, "DoctorVideoCallWindow", windowFeatures);
 };
@@ -118,7 +118,7 @@ const handleStartAudioCall = () => {
     return;
   }
 
-  const doctorCallUrl = `${window.location.origin}/doctor/startConsult/${consultationId}/details/Audio`;
+  const doctorCallUrl = `${window.location.origin}/doctor/start-consult/${consultationId}/details/audio`;
   const windowFeatures = `width=${window.innerWidth * 0.8},height=${window.innerHeight * 0.8},left=${window.innerWidth * 0.1},top=${window.innerHeight * 0.1},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`;
   window.open(doctorCallUrl, "AudioCallWindow", windowFeatures);
 };
@@ -130,7 +130,9 @@ const handleStartAudioCall = () => {
     const activeConsultationId = storedData?.data?.activeConsultationId;
     const patientId = patient?._id;
 
-    if (!activeConsultationId || !doctorId || !patientId) return;
+    if (!activeConsultationId) { alert("Missing consultation ID — cannot stop."); return; }
+    if (!doctorId) { alert("Missing doctor ID — cannot stop."); return; }
+    if (!patientId) { alert("Missing patient ID — cannot stop."); return; }
 
     try {
       const res = await fetch(
@@ -144,14 +146,15 @@ const handleStartAudioCall = () => {
       const result = await res.json();
 
       if (result.state) {
-        // Optional: fetch updated consultations
         localStorage.removeItem("patientId");
-        localStorage.removeItem("patientData");
-        setIsConsultationCompleted(true); // ✅ show certify + bill buttons
+        localStorage.removeItem("consultPatientData");
+        setIsConsultationCompleted(true);
       } else {
+        alert("Could not stop consultation: " + (result.message || "Unknown error"));
         console.error("Consultation not ended properly", result.message);
       }
     } catch (err) {
+      alert("Network error while stopping consultation: " + err.message);
       console.error("Error ending consultation:", err);
     }
   };
@@ -261,6 +264,12 @@ const handleStartAudioCall = () => {
 
         <Divider style={{ margin: "10px 0" }} />
 
+        {isConsultationCompleted && (
+          <div className="alert alert-success py-2 mb-2 text-center" style={{ fontSize: 13 }}>
+            Consultation stopped. Please certify and/or bill before leaving.
+          </div>
+        )}
+
         <div className="d-flex justify-content-center flex-wrap gap-2 mb-3">
           {allButtons.map((button, index) => (
             <button
@@ -272,6 +281,15 @@ const handleStartAudioCall = () => {
               <span>{button.label}</span>
             </button>
           ))}
+          {isConsultationCompleted && (
+            <button
+              className="btn btn-secondary btn-sm d-flex align-items-center"
+              onClick={() => navigate("/doctor")}
+            >
+              <i className="fas fa-home me-1"></i>
+              <span>Go to Dashboard</span>
+            </button>
+          )}
         </div>
 
         <div className="d-flex justify-content-center gap-3 mb-3">
@@ -288,8 +306,8 @@ const handleStartAudioCall = () => {
       <PatientDetailForm open={showPatientDetailForm} patientData={patient} handleClose={() => setShowPatientDetailForm(false)} />
       <ReferModal show={showReferModal} handleClose={() => setShowReferModal(false)} />
       <AddFamilyModal show={showAddFamilyModal} handleClose={() => setShowAddFamilyModal(false)} />
-      <CertifyModal show={showCertifyModal} handleClose={() => setShowCertifyModal(false)} />
-      <BillingModal show={showBillingModal} handleClose={() => setShowBillingModal(false)} />
+      {showCertifyModal && <CertifyConsultModal consultationId={getConsultationId()} patient={patient} onClose={() => setShowCertifyModal(false)} />}
+      {showBillingModal && <BillingConsultModal consultationId={getConsultationId()} onClose={() => setShowBillingModal(false)} />}
       <InvestigateModal show={showInvestigateModal} handleClose={() => setShowInvestigateModal(false)} />
     </>
   );

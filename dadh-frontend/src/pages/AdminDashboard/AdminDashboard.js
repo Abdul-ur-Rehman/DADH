@@ -19,7 +19,6 @@ const AdminDashboard = () => {
         },
       });
       const result = await response.json();
-      console.log("API Response:", result.data); // Response check
 
       if (response.ok) {
         const updatedPatients = await Promise.all(

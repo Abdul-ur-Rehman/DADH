@@ -23,6 +23,7 @@ const doctorSchema = new mongoose.Schema({
   qualification: { type: String, required: true, trim: true, min: 3, max: 255 },
   consultedPatients: { type: Array },
 
+  photo: { type: String, default: "" },
   signature: { type: String, default: "" },
   isSignatureProvided: { type: Boolean, default: false },
 
@@ -34,11 +35,17 @@ const doctorSchema = new mongoose.Schema({
   otp: { type: String },
   otpExpiry: { type: Date },
 
-  // ✅ Only keep this for enable/disable
+  // isApproved: set to true by admin when doctor request is approved
+  isApproved: {
+    type: Boolean,
+    default: false,
+  },
+
+  // status: 0 = Disabled by admin, 1 = Enabled
   status: {
     type: Number,
-    enum: [0, 1], // 0 = Disabled, 1 = Enabled
-    default: 1,
+    enum: [0, 1],
+    default: 0, // new registrations start blocked until admin approves
   },
 });
 

@@ -1,13 +1,6 @@
 import React from "react";
-import PatientLogin from './PatientLogin';
+import PatientLogin from "./PatientLogin";
 
-const PatientLoginPage  = () => {
-  return (
-    <div>
-      <h2>Patient Login</h2>
-      <PatientLogin />
-    </div>
-  );
-};
+const PatientLoginPage = () => <PatientLogin />;
 
 export default PatientLoginPage;

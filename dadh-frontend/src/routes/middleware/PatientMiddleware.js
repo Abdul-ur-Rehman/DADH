@@ -35,7 +35,6 @@ const PatientMiddleware = props => {
   }, [navigate]);
 
   const isPatient = authUser?.state;
-  console.log("Is Patient:", isPatient); // Debugging
 
   return (
     <Layout>

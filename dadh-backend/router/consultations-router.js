@@ -22,6 +22,7 @@ router.patch("/referDoctor", consultationsController.referDoctor);
 router.patch("/investigation/add", consultationsController.addInvestigateion);
 router.patch("/certification/add", consultationsController.addCertification);
 router.get("/patientCertificate/:consultationId",consultationsController.getCertifications);
+router.patch("/request-certificate/:id", consultationsController.requestCertificate);
 router.patch("/prescribtion/add/:id", consultationsController.addPrescribtion);
 router.patch("/pause/:id", consultationsController.pauseConsultation);
 router.patch("/requeuePatient", consultationsController.requeuePatient);
@@ -44,6 +45,7 @@ router.get("/totalPatientsByConsultation/:id", consultationsController.totalPati
 router.get("/totalCurrentDayConsultationsCount/:id", consultationsController.TotalCurrentDayConsultationsCount);
 router.get("/lastSevenDaysConsultations/:id", consultationsController.getLast7DaysConsultations);
 router.get("/incompleteBillings/:id", consultationsController.getIncompleteBillingConsultations);
+router.patch("/billing/:id", consultationsController.updateBillingCodes);
 router.get("/checkIsDuplicate", consultationsController.checkIsDuplicate);
 router.get("/doctor/:id/notes", consultationsController.getNotesByDoctorId);
 

@@ -25,6 +25,7 @@ const SidebarContent = (props) => {
   const Ref = useRef();
 
   const [doctors, setDoctors] = useState([]);
+  const [certPendingCount, setCertPendingCount] = useState(0);
 
   const activateParentDropdown = useCallback((item) => {
     item.classList.add("active");
@@ -74,9 +75,28 @@ const SidebarContent = (props) => {
   }, [location.pathname, activeMenu]);
 
   useEffect(() => {
+    const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api";
+    const fetchCertPending = async () => {
+      try {
+        const doctorId = JSON.parse(localStorage.getItem("data"))?.data?._id;
+        if (!doctorId) return;
+        const res = await fetch(`${BASE_URL}/consultations/incompleteBillings/${doctorId}`);
+        const json = await res.json();
+        const count = (json.data || []).filter(
+          (c) => c.requestedCertificate?.length > 0 && !c.certificates?.length
+        ).length;
+        setCertPendingCount(count);
+      } catch {}
+    };
+    fetchCertPending();
+    const id = setInterval(fetchCertPending, 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const api = "http://localhost:5001/api/doctor/getAll";
+        const api = `${process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"}/doctor/getAll`;
         const response = await fetch(api);
         const result = await response.json();
         if (response.ok) {
@@ -133,28 +153,35 @@ const handleLogout = () => {
             </li>
 
             <li>
-              <Link to="/doctor/consultHistory" className="waves-effect">
+              <Link to="/doctor/consult-history" className="waves-effect">
                 <UserCheck size={18} className="me-2" />
                 <span>{props.t("Consult History")}</span>
+                {certPendingCount > 0 && (
+                  <span className="badge rounded-pill float-end" style={{
+                    background: "#fb8c00", color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 18,
+                  }}>
+                    {certPendingCount}
+                  </span>
+                )}
               </Link>
             </li>
 
             <li>
-              <Link to="/doctor/billingpage" className="waves-effect">
+              <Link to="/doctor/billing" className="waves-effect">
                 <CreditCard size={18} className="me-2" />
                 <span>{props.t("Billing")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/doctor/supportcard" className="waves-effect">
+              <Link to="/doctor/support-card" className="waves-effect">
                 <Headphones size={18} className="me-2" />
                 <span>{props.t("Support")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/doctor/myAccount" className="waves-effect">
+              <Link to="/doctor/my-account" className="waves-effect">
                 <Users size={18} className="me-2" />
                 <span>{props.t("My Account")}</span>
               </Link>

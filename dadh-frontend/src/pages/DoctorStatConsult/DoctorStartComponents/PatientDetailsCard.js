@@ -108,7 +108,7 @@ const PatientDetailCard = () => {
       const doctorId = jsonData.data._id;
       localStorage.setItem("consultationId", consultationId);
       localStorage.setItem("patientId", patientId);
-      localStorage.setItem("patientData", JSON.stringify(patientHosInfo));
+      localStorage.setItem("consultPatientData", JSON.stringify(patientHosInfo));
       console.log("patientHosInfo ", patientHosInfo);
       if (!doctorId || !consultInfo?._id) {
         console.error("Doctor ID or Consultation ID is missing");

@@ -156,12 +156,13 @@ const login = async (req, res, next) => {
       console.error("❌ SMS sending failed:", smsErr.message);
     }
 
-    // 6. Send response
+    // 6. Send response (strip OTP fields from response — kept in DB only for verify step)
+    const { otp: _otp, otpExpiry: _exp, ...patientSafe } = patient.toObject();
     res.status(200).json({
       state: true,
       message: "OTP sent to your registered phone number.",
       token: await generateToken(patient, next), // JWT
-      data: patient, // isme otp + expiry included honge
+      data: patientSafe,
     });
   } catch (err) {
     console.error("Patient login error:", err);
@@ -252,8 +253,19 @@ const resendOtp = async (req, res, next) => {
     patient.otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
     await patient.save();
 
-    // ✅ Yahan SMS bhejna (Twilio/other API)
-    console.log("Resent OTP for Patient:", otp);
+    // Send OTP via SMS
+    const phoneToSend = patient.phone.startsWith("+")
+      ? patient.phone
+      : "+" + patient.phone;
+
+    try {
+      await sendSms({
+        to: phoneToSend,
+        body: `Your login OTP is ${otp}. It is valid for 5 minutes.`,
+      });
+    } catch (smsErr) {
+      console.error("SMS sending failed:", smsErr.message);
+    }
 
     return res.status(200).json({
       state: true,
@@ -329,6 +341,7 @@ const updatePatientById = async (req, res, next) => {
       gender,
       zipCode,
       allergies,
+      address,
     } = req.body;
     const patientId = req.params.patientId; // Assuming the patient ID is passed as a parameter
 
@@ -534,6 +547,27 @@ const setOffline = async (req, res, next) => {
     next(err);
   }
 };
+const uploadProfilePhoto = async (req, res, next) => {
+  try {
+    const { patientId } = req.params;
+    if (!req.file) {
+      return res.status(400).json({ state: false, message: "No file uploaded" });
+    }
+    const imageUrl = `/uploads/${req.file.filename}`;
+    const patient = await Patient.findByIdAndUpdate(
+      patientId,
+      { profileImage: imageUrl },
+      { new: true }
+    );
+    if (!patient) {
+      return res.status(404).json({ state: false, message: "Patient not found" });
+    }
+    res.status(200).json({ state: true, message: "Profile photo updated", data: patient });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getPatientById,
   updatePatientById,
@@ -552,4 +586,5 @@ module.exports = {
   toggleActive,
   verifyOtp,
   resendOtp,
+  uploadProfilePhoto,
 };

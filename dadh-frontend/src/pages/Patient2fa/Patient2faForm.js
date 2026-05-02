@@ -1,349 +1,266 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./OTPVerification.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { RecaptchaVerifier, signInWithPhoneNumber, getAuth } from "firebase/auth";
+import logoDark from "../../assets/images/logo-dark.png";
 
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api";
 const auth = getAuth();
 
-const Patient2faForm = () => {
-  const location = useLocation();
+const T = {
+  teal:      "#0D7377",
+  tealDark:  "#0A5F62",
+  border:    "#D1E8E8",
+  fg:        "#111E1F",
+  muted:     "#4B7172",
+  white:     "#ffffff",
+  error:     "#EF4444",
+};
+
+const STYLES = `
+  @keyframes otp-fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes otp-spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+export default function Patient2faForm() {
+  const location  = useLocation();
+  const navigate  = useNavigate();
   const isConsulting = location.state?.isConsulting;
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const navigate = useNavigate();
-  const [patientId, setPatientId] = useState("");
-  const [error, setError] = useState("");
-  const [timer, setTimer] = useState(30);
+
+  const [otp, setOtp]           = useState(["", "", "", "", "", ""]);
+  const [error, setError]       = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [timer, setTimer]       = useState(30);
   const [canResend, setCanResend] = useState(false);
+
   const recaptchaRef = useRef(null);
+  const inputRefs    = useRef([]);
 
-  useEffect(() => {
-    console.log("isConsulting prop value:", location.state);
-  }, [isConsulting]);
+  const patientId = (() => {
+    try { return JSON.parse(localStorage.getItem("patientData"))?.data?._id || "" }
+    catch { return "" }
+  })();
 
-  useEffect(() => {
-    const storedData = localStorage.getItem("patientData");
-    if (storedData) {
-      const toJSON = JSON.parse(storedData);
-      setPatientId(toJSON?.data?._id || "");
-    }
-  }, []);
-
+  // ── Init invisible reCAPTCHA ─────────────────────────────────────────────
   useEffect(() => {
     if (!recaptchaRef.current) {
-      recaptchaRef.current = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: (response) => {
-            console.log("reCAPTCHA solved", response);
-          },
-        }
-      );
+      recaptchaRef.current = new RecaptchaVerifier(auth, "recaptcha-container", {
+        size: "invisible",
+      });
     }
   }, []);
 
+  // ── Countdown timer ───────────────────────────────────────────────────────
   useEffect(() => {
     if (timer > 0) {
-      const countdown = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(countdown);
+      const t = setTimeout(() => setTimer((v) => v - 1), 1000);
+      return () => clearTimeout(t);
     } else {
       setCanResend(true);
     }
   }, [timer]);
 
-  const handleChange = (index, event) => {
-    let value = event.target.value;
-    if (isNaN(value)) return;
+  // ── OTP input handling ────────────────────────────────────────────────────
+  const handleChange = (index, e) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 1);
+    const next = [...otp];
+    next[index] = val;
+    setOtp(next);
+    setError("");
+    if (val && index < 5) inputRefs.current[index + 1]?.focus();
+  };
 
-    let newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    if (value !== "" && index < 5) {
-      document.getElementById(`otp-input-${index + 1}`).focus();
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const addconsultation = async () => {
-    const teleHealthOptions = localStorage.getItem("teleHealthOptions");
-    const categoryDescription = localStorage.getItem("CategoryDescription");
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+    const next = [...otp];
+    pasted.split("").forEach((ch, i) => { next[i] = ch; });
+    setOtp(next);
+    inputRefs.current[Math.min(pasted.length, 5)]?.focus();
+  };
+
+  // ── Add consultation after OTP verification ───────────────────────────────
+  const addConsultation = async () => {
     const selectedCategory = localStorage.getItem("selectedCategory");
+    const notes            = localStorage.getItem("CategoryDescription");
+    const type             = localStorage.getItem("teleHealthOptions");
 
-    const consultBody = {
-      consultationCategory: selectedCategory,
-      patientId: patientId,
-      notes: categoryDescription,
-      type: teleHealthOptions,
-      doctorId: "",
-    };
     try {
-      const addConsult = await fetch("http://localhost:5001/api/consultations/add", {
+      const res = await fetch(`${BASE_URL}/consultations/add`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(consultBody),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ consultationCategory: selectedCategory, patientId, notes, type, doctorId: "" }),
       });
-
-      const consultResponse = await addConsult.json();
-
-      if (addConsult.ok) {
-        localStorage.setItem("ConsultationId", consultResponse?.data?._id);
-        localStorage.setItem("patientId", patientId);
-      } else {
-        console.error("Consultation create failed", consultResponse.message);
-      }
-    } catch (error) {
-      console.log("consultation error", error);
-    }
+      const json = await res.json();
+      if (res.ok) localStorage.setItem("ConsultationId", json?.data?._id);
+    } catch {}
   };
 
-  const handleSubmit = async () => {
-    const otpCode = otp.join("");
-    if (otpCode.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
-      return;
-    }
+  // ── Verify OTP ────────────────────────────────────────────────────────────
+  const handleVerify = async () => {
+    const code = otp.join("");
+    if (code.length !== 6) { setError("Please enter the complete 6-digit code."); return; }
+    if (verifying) return;
 
+    setVerifying(true);
+    setError("");
     try {
-      const result = await window.confirmationResult.confirm(otpCode);
-      console.log("OTP verified:", result.user);
-
-      if (!patientId) {
-        console.error("Patient ID is missing");
-        return;
-      }
-
-      if (isConsulting) {
-        await addconsultation();
-      }
-
-      navigate("/patient", { state: { patientId: patientId } });
-    } catch (error) {
-      console.error("OTP verification failed", error);
-      setError("Invalid or expired OTP. Please try again.");
-    } finally {
+      await window.confirmationResult.confirm(code);
+      if (!patientId) { setError("Patient session not found. Please log in again."); return; }
+      if (isConsulting) await addConsultation();
       localStorage.removeItem("selectedCategory");
       localStorage.removeItem("CategoryDescription");
       localStorage.removeItem("teleHealthOptions");
+      navigate("/patient", { state: { patientId } });
+    } catch {
+      setError("Invalid or expired code. Please try again.");
+    } finally {
+      setVerifying(false);
     }
   };
 
-  const handleResendOTP = async () => {
-    const phone = "+92" + localStorage.getItem("patientPhone");
-
+  // ── Resend OTP ────────────────────────────────────────────────────────────
+  const handleResend = async () => {
+    const phone = "+61" + (localStorage.getItem("patientPhone") || "");
     try {
       setCanResend(false);
       setTimer(30);
-
-      const confirmationResult = await signInWithPhoneNumber(
-        auth,
-        phone,
-        recaptchaRef.current
-      );
-      window.confirmationResult = confirmationResult;
-      alert("OTP resent successfully!");
-    } catch (err) {
-      console.error("Error resending OTP:", err);
-      alert("Failed to resend OTP. Try again.");
+      const result = await signInWithPhoneNumber(auth, phone, recaptchaRef.current);
+      window.confirmationResult = result;
+    } catch {
+      setError("Failed to resend code. Please try again.");
+      setCanResend(true);
     }
   };
 
   return (
-    <div className="otp-container">
-      {/* Invisible reCAPTCHA container */}
+    <div
+      className="dadh-tw-root"
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: `linear-gradient(135deg, ${T.tealDark} 0%, ${T.teal} 50%, #14B8A6 100%)`,
+        padding: "24px",
+      }}
+    >
+      <style>{STYLES}</style>
       <div id="recaptcha-container" style={{ position: "absolute", left: "-9999px" }} />
 
-      <div className="otp-box">
-        <h2>Enter the Verification Code</h2>
-        <p>We have sent a code to your registered phone number.</p>
+      <div style={{
+        background: T.white,
+        borderRadius: 20,
+        padding: "40px 36px",
+        width: "100%",
+        maxWidth: 420,
+        boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
+        animation: "otp-fade-up 0.4s ease-out both",
+        textAlign: "center",
+      }}>
+        <img src={logoDark} alt="DADH" style={{ height: 40, marginBottom: 24 }} />
 
-        <div className="otp-inputs">
-          {otp.map((digit, index) => (
+        <div style={{ width: 56, height: 56, background: "#E6F4F4", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, margin: "0 auto 20px" }}>
+          📱
+        </div>
+
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: T.fg, margin: "0 0 8px" }}>
+          Verify Your Number
+        </h2>
+        <p style={{ fontSize: 13, color: T.muted, margin: "0 0 32px", lineHeight: 1.6 }}>
+          Enter the 6-digit code sent to your registered phone number.
+        </p>
+
+        {/* OTP input boxes */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 24 }} onPaste={handlePaste}>
+          {otp.map((digit, i) => (
             <input
-              key={index}
-              id={`otp-input-${index}`}
+              key={i}
+              ref={(el) => (inputRefs.current[i] = el)}
               type="text"
-              maxLength="1"
+              inputMode="numeric"
+              maxLength={1}
               value={digit}
-              onChange={(e) => handleChange(index, e)}
+              onChange={(e) => handleChange(i, e)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              style={{
+                width: 48,
+                height: 56,
+                textAlign: "center",
+                fontSize: 22,
+                fontWeight: 700,
+                border: `2px solid ${digit ? T.teal : T.border}`,
+                borderRadius: 10,
+                color: T.fg,
+                outline: "none",
+                fontFamily: "inherit",
+                background: digit ? "#F0FDFA" : T.white,
+                transition: "border-color 0.15s, background 0.15s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = T.teal)}
+              onBlur={(e) => (e.target.style.borderColor = digit ? T.teal : T.border)}
             />
           ))}
         </div>
 
-        {error && <p className="error-message">{error}</p>}
+        {error && (
+          <p style={{ fontSize: 13, color: T.error, marginBottom: 16, fontWeight: 500 }}>{error}</p>
+        )}
 
-        <button className="verify-btn" onClick={handleSubmit}>
-          Verify
+        <button
+          onClick={handleVerify}
+          disabled={verifying}
+          style={{
+            width: "100%",
+            padding: "13px",
+            background: verifying ? T.muted : T.teal,
+            color: T.white,
+            border: "none",
+            borderRadius: 9,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: verifying ? "not-allowed" : "pointer",
+            fontFamily: "inherit",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            marginBottom: 20,
+          }}
+        >
+          {verifying ? (
+            <>
+              <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "otp-spin 0.7s linear infinite", display: "inline-block" }} />
+              Verifying…
+            </>
+          ) : "Verify Code"}
         </button>
 
-        <p className="resend">
-          Didn’t receive a code?
+        <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>
+          Didn't receive a code?{" "}
           {canResend ? (
-            <span
-              onClick={handleResendOTP}
-              style={{ color: "blue", cursor: "pointer" }}
+            <button
+              onClick={handleResend}
+              style={{ background: "none", border: "none", color: T.teal, fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}
             >
-              {" "}
-              Resend OTP
-            </span>
+              Resend
+            </button>
           ) : (
-            <span style={{ color: "gray" }}> Resend in {timer}s</span>
+            <span style={{ color: "#94a3b8" }}>Resend in {timer}s</span>
           )}
         </p>
       </div>
     </div>
   );
-};
-
-export default Patient2faForm;
-
-
-
-// import React, { useState, useEffect, useRef } from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
-// import { RecaptchaVerifier, signInWithPhoneNumber, getAuth } from "firebase/auth";
-
-
-// const auth = getAuth();
-
-// const Patient2faForm = () => {
-//   const location = useLocation();
-//   const navigate = useNavigate();
-
-//   const isConsulting = location.state?.isConsulting;
-//   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-//   const [error, setError] = useState("");
-//   const [timer, setTimer] = useState(30);
-//   const [canResend, setCanResend] = useState(false);
-//   const [verifying, setVerifying] = useState(false);
-
-//   const patientId = JSON.parse(localStorage.getItem("patientData"))?.data?._id;
-//   const phone = localStorage.getItem("phoneForOtp");
-
-//   useEffect(() => {
-//     if (!window.recaptchaVerifier) {
-//       window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-//         size: "invisible",
-//         callback: () => console.log("Recaptcha resolved"),
-//       });
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     if (timer > 0) {
-//       const countdown = setInterval(() => setTimer((prev) => prev - 1), 1000);
-//       return () => clearInterval(countdown);
-//     } else setCanResend(true);
-//   }, [timer]);
-
-//   const handleChange = (index, event) => {
-//     const value = event.target.value;
-//     if (!isNaN(value)) {
-//       const newOtp = [...otp];
-//       newOtp[index] = value;
-//       setOtp(newOtp);
-//       if (index < 5) document.getElementById(`otp-input-${index + 1}`).focus();
-//     }
-//   };
-
-//   const handleSubmit = async () => {
-//     if (verifying) return;
-//     setVerifying(true);
-//     const code = otp.join("");
-
-//     if (code.length !== 6) {
-//       setError("Please enter full 6-digit code");
-//       setVerifying(false);
-//       return;
-//     }
-
-//     try {
-//       const result = await window.confirmationResult.confirm(code);
-//       const firebaseToken = await result.user.getIdToken();
-
-//       // ✅ Send Firebase token to backend for final verification
-//       const res = await fetch("http://localhost:5001/api/patient/auth/verify-otp-token", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${firebaseToken}`,
-//         },
-//       });
-
-//       const data = await res.json();
-//       if (res.ok) {
-//         localStorage.setItem("token", data.token);
-//         if (isConsulting) await addConsultation();
-//         navigate("/patient", { state: { patientId } });
-//       } else {
-//         throw new Error(data.message || "Backend verification failed");
-//       }
-//     } catch (err) {
-//       console.error(err);
-//       setError("Invalid or expired OTP");
-//     } finally {
-//       localStorage.removeItem("selectedCategory");
-//       localStorage.removeItem("CategoryDescription");
-//       localStorage.removeItem("teleHealthOptions");
-//       setVerifying(false);
-//     }
-//   };
-
-//   const handleResendOTP = async () => {
-//     setCanResend(false);
-//     setTimer(30);
-
-//     const confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
-//     window.confirmationResult = confirmationResult;
-//     alert("OTP resent");
-//   };
-
-//   const addConsultation = async () => {
-//     const selectedCategory = localStorage.getItem("selectedCategory");
-//     const notes = localStorage.getItem("CategoryDescription");
-//     const type = localStorage.getItem("teleHealthOptions");
-
-//     const response = await fetch("http://localhost:5001/api/consultations/add", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ consultationCategory: selectedCategory, patientId, notes, type }),
-//     });
-
-//     const result = await response.json();
-//     if (response.ok) {
-//       localStorage.setItem("ConsultationId", result?.data?._id);
-//     }
-//   };
-
-//   return (
-//     <>
-//       <div id="recaptcha-container" style={{ position: "absolute", left: "-9999px" }} />
-//       <div className="otp-box">
-//         <h2>Enter OTP Code</h2>
-//         <div className="otp-inputs">
-//           {otp.map((digit, i) => (
-//             <input key={i} maxLength="1" id={`otp-input-${i}`} value={digit} onChange={(e) => handleChange(i, e)} />
-//           ))}
-//         </div>
-//         {error && <p className="error-message">{error}</p>}
-//         <button className="verify-btn" onClick={handleSubmit} disabled={verifying}>
-//           {verifying ? "Verifying..." : "Verify"}
-//         </button>
-//         <p className="resend">
-//           Didn’t get code?
-//           {canResend ? (
-//             <span onClick={handleResendOTP} style={{ color: "blue", cursor: "pointer" }}> Resend</span>
-//           ) : (
-//             <span style={{ color: "gray" }}> Resend in {timer}s</span>
-//           )}
-//         </p>
-//       </div>
-//     </>
-//   );
-// };
-
-// export default Patient2faForm;
+}

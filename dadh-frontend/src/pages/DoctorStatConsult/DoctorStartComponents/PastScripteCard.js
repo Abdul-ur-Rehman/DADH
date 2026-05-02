@@ -14,7 +14,7 @@ const PastScriptsCard = () => {
   /* --- read patient from whichever LS key exists --- */
   useEffect(() => {
     const raw =
-      localStorage.getItem("patientData") || localStorage.getItem("data");
+      localStorage.getItem("consultPatientData") || localStorage.getItem("data");
     if (!raw) return console.warn("No patient info in localStorage");
 
     try {

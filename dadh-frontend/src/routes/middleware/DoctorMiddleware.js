@@ -24,7 +24,6 @@ const DoctorMiddleware = props => {
   // const Layout = getLayout(layoutType);
   const storedData = localStorage.getItem("data");
   const authUser = storedData ? JSON.parse(storedData) : null;
-  console.log('data from middleware : ',authUser)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,7 +35,6 @@ const DoctorMiddleware = props => {
   }, [navigate]);
 
   const isDoctor = authUser?.state;
-  console.log("Is Doctor :", isDoctor); // Debugging
   return (
     <Layout>
       {/* Wrap everything inside a fragment to avoid the warning */}

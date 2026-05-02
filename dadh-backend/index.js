@@ -1,85 +1,101 @@
+// Load env FIRST — many requires below (smsController, db-connect, etc.) read process.env at import time.
+require("dotenv").config();
+
 const express = require("express");
-const app = express();
 const path = require("path");
-// const resend = require("resend");
-const authDoctorRouter = require('./router/doctor-auth-router');
-const adminRouter = require('./router/admin-router');
-const patientRouter = require('./router/patient-router');
-// const fetchRouter = require('./router/fetch-routes')
 const cors = require("cors");
+const helmet = require("helmet");
+
 const connectDB = require("./config/db-connect");
-const errorMiddleware = require('./middlewares/error-middleware');
-const consultationCategoryRouter = require('./router/consultation-category-router');
-const consultationsRouter = require('./router/consultations-router');
-const doctorRequestRouter = require('./router/doctor-requests');
-const doctorRouter = require('./router/doctor-router');
-const billingRouter = require('./router/billing-router');
-// const invoiceRouter = require('./router/invoice-router');
-const chatRouter = require('./router/chat-router');
-const billRouter = require('./router/bill-router');
-const medicineRouter = require('./router/medicine-router');
-const smsRouter = require('./router/smsRouter')
-// import fetch, { Headers, Response, Request } from "node-fetch";
+const errorMiddleware = require("./middlewares/error-middleware");
+
+const authDoctorRouter = require("./router/doctor-auth-router");
+const adminRouter = require("./router/admin-router");
+const patientRouter = require("./router/patient-router");
+const consultationCategoryRouter = require("./router/consultation-category-router");
+const consultationsRouter = require("./router/consultations-router");
+const doctorRequestRouter = require("./router/doctor-requests");
+const doctorRouter = require("./router/doctor-router");
+const billingRouter = require("./router/billing-router");
+const chatRouter = require("./router/chat-router");
+const billRouter = require("./router/bill-router");
+const medicineRouter = require("./router/medicine-router");
+const smsRouter = require("./router/smsRouter");
 const templateRoutes = require("./router/templateRoutes");
 const uploadRoutes = require("./router/uploadRouter");
 const aiScribeRouter = require("./router/aiScribeRouter");
 const recordingRoutes = require("./router/recordingRoutes");
 const transcribeRoutes = require("./services/deepgramService");
 
+const app = express();
 
+// Fail fast if critical secrets are missing (matches multi-env deployment expectations).
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error("FATAL: JWT_SECRET must be set and at least 32 chars long.");
+  process.exit(1);
+}
+if (!process.env.URI) {
+  console.error("FATAL: URI (MongoDB connection string) must be set.");
+  process.exit(1);
+}
 
-// import('node-fetch').then(({ Headers }) => {
-//   global.Headers = Headers;
-// });
+// --- Security middleware (must come before routes) ---
 
-require("dotenv").config();
+// Helmet sets sensible security headers (X-Frame-Options, X-Content-Type-Options, etc.)
+// CSP intentionally not configured here — it requires per-page tuning and breaks inline
+// scripts in some pages. Phase 9 (infra) will add a tuned CSP.
+app.use(helmet({ contentSecurityPolicy: false }));
 
-app.use(express.json());
-app.use(cors({ origin: "*"})); 
-const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:3000','http://localhost:3001','http://localhost:5174', 'https://c8d735a545f3.ngrok-free.app'],
-  methods: "POST, PUT, DELETE, GET, PATCH, HEAD",
-  credentials: true,
-};
-app.use(cors(corsOptions));
+// Body size limits — prevent oversized-payload DoS
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
+// CORS — explicit allowlist driven by ALLOWED_ORIGINS env var. No wildcard.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
-//middleware allow to use json data
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow non-browser requests (curl, mobile apps, server-to-server) — no Origin header.
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    methods: "POST,PUT,DELETE,GET,PATCH,HEAD,OPTIONS",
+    credentials: true,
+  })
+);
 
-app.use('/api/doctor/auth', authDoctorRouter);
-app.use('/api/admin/auth', adminRouter);
-app.use('/api/patient/auth', patientRouter);
-// app.use('/api/fetch', fetchRouter);
-app.use('/api/consultationCategory', consultationCategoryRouter);
-app.use('/api/doctor', doctorRouter);
-app.use('/api/consultations', consultationsRouter);
-app.use('/api/doctor-requests', doctorRequestRouter);
-app.use('/api/billing', billingRouter);
-app.use('/api/bill', billRouter);
-// app.use('/api/invoice', invoiceRouter);
-app.use('/api/user-sign', chatRouter);
-app.use('/api/medicines', medicineRouter)
-app.use('/api/FamilyMembers', patientRouter);
-app.use('/notification/sms',smsRouter);
+// --- Routes ---
+
+app.use("/api/doctor/auth", authDoctorRouter);
+app.use("/api/admin/auth", adminRouter);
+app.use("/api/patient/auth", patientRouter);
+app.use("/api/consultationCategory", consultationCategoryRouter);
+app.use("/api/doctor", doctorRouter);
+app.use("/api/consultations", consultationsRouter);
+app.use("/api/doctor-requests", doctorRequestRouter);
+app.use("/api/billing", billingRouter);
+app.use("/api/bill", billRouter);
+app.use("/api/user-sign", chatRouter);
+app.use("/api/medicines", medicineRouter);
+app.use("/api/FamilyMembers", patientRouter);
+app.use("/notification/sms", smsRouter);
 app.use("/api/templates", templateRoutes);
 
-// ✅ Serve static files from uploads folder
+// Serve uploaded audio files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// ✅ Use upload routes
 app.use("/api/upload-audio", uploadRoutes);
 
 app.use("/api", recordingRoutes);
-
 app.use("/api/ai-scribe", aiScribeRouter);
-// ✅ Import Transcribe Routes
-
 app.use("/api/transcribe-latest", transcribeRoutes);
 
-
-
+// --- Error handler (must be last) ---
 app.use(errorMiddleware);
-// app.use(errorMiddleware)
 
 connectDB().then(() => {
   app.listen(process.env.PORT, () =>

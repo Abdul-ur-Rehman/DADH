@@ -154,7 +154,7 @@ const DoctorRequestForm = () => {
 
       if (response.ok) {
         Swal.fire("Updated!", "Doctor details updated successfully.", "success");
-        navigate(`/admin/doctorRequests/table`);
+        navigate(`/admin/doctor-requests/table`);
       } else if (response.status === 409) {
         if (data.message.includes("Prescriber")) {
           Swal.fire("Error", "Prescriber No already in use", "error");
@@ -178,7 +178,7 @@ const DoctorRequestForm = () => {
   };
 
   const handleCancel = () => {
-    navigate(`/admin/doctorRequests/table`);
+    navigate(`/admin/doctor-requests/table`);
   };
 
   return (

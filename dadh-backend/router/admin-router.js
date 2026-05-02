@@ -6,10 +6,11 @@ const emailController = require("../controllers/emailController");
 
 const signupSchema = require("../validator/admin-signup-validator");
 const loginSchema = require("../validator/admin-login-validator");
+const { authLimiter, registerLimiter } = require("../middlewares/rate-limit-middleware");
 
 // Auth Routes
-router.post("/register", validator(signupSchema), adminController.register);
-router.post("/login", validator(loginSchema), adminController.login);
+router.post("/register", registerLimiter, validator(signupSchema), adminController.register);
+router.post("/login", authLimiter, validator(loginSchema), adminController.login);
 
 // Admin CRUD Routes
 router.patch("/toggleActive/:id", adminController.toggleActiveById);
