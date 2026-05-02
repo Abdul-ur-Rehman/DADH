@@ -85,7 +85,6 @@ DADH/
 │   ├── index.js            # Server entry point
 │   └── package.json
 │
-├── CLAUDE.md               # Project development guidelines
 └── README.md               # This file
 ```
 
@@ -395,15 +394,6 @@ curl http://localhost:5001/api/health
 
 ---
 
-## 📚 Development Guidelines
-
-For detailed development guidelines, patterns, and conventions, refer to:
-- **CLAUDE.md** — Project development context and architecture patterns
-- **`.claude/docs/architectural_patterns.md`** — Detailed codebase patterns
-- **`.claude/skills/dadh-commit/SKILL.md`** — Git commit workflow
-
----
-
 ## 🔄 Deployment
 
 ### Frontend Build
@@ -451,9 +441,8 @@ This project is licensed under the MIT License — see LICENSE file for details.
 
 For issues, feature requests, or questions:
 1. Check existing issues in the repository
-2. Refer to CLAUDE.md for development context
-3. Review API documentation in backend code
-4. Check Sendbird, Tencent TRTC, and Deepgram documentation for service-specific issues
+2. Review API documentation in backend code
+3. Check Sendbird, Tencent TRTC, and Deepgram documentation for service-specific issues
 
 ---
 
@@ -481,17 +470,4 @@ For issues, feature requests, or questions:
 - ✅ Billing code selection with 12-hour lock
 - ✅ Stop Consultation and Requeue Patient functionality
 
----
 
-## 👨‍💻 Development Team
-
-Built with ❤️ for Australian healthcare.
-
----
-
-**Last Updated:** May 2, 2026
-**Node.js Version:** v16+
-**React Version:** 18.x
-**MongoDB Version:** 4.4+
-
-For the latest development updates and current work, check the git commit history and CLAUDE.md.
