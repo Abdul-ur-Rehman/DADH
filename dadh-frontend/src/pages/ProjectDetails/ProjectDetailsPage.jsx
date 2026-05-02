@@ -254,7 +254,6 @@ export default function ProjectDetailsPage() {
             <li>Start the backend server first</li>
             <li>Start the frontend application</li>
             <li>Navigate to <code>http://localhost:3000</code> and use role-specific login pages</li>
-            <li>For development, refer to CLAUDE.md for project conventions</li>
           </ol>
         </section>
 
