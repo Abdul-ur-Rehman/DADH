@@ -78,8 +78,8 @@ function AdminHomeDashboard() {
         ) : (
           <>
             <div style={{ display: "flex", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-              <StatCard label="Total Doctors" value={stats.doctors} color="#0D7377" onClick={() => navigate("/admin/doctor-requests/table")} />
-              <StatCard label="Total Patients" value={stats.patients} color="#14B8A6" onClick={() => navigate("/admin/patient-details/table")} />
+              <StatCard label="Total Doctors" value={stats.doctors} color="#0D7377" onClick={() => navigate("/admin/doctorRequests/table")} />
+              <StatCard label="Total Patients" value={stats.patients} color="#14B8A6" onClick={() => navigate("/admin/patientDetails/table")} />
               <StatCard label="Total Consultations" value={stats.consultations} color="#8B5CF6" onClick={() => navigate("/admin/Consultations")} />
               <StatCard label="Est. Revenue" value={`$${stats.revenue.toLocaleString()}`} sub="based on billed codes" color="#22C55E" />
             </div>
