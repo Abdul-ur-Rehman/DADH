@@ -111,8 +111,8 @@ const PatientLogin = () => {
 
       const data = await response.json();
 
-      if (data.message === "Patient not found") {
-        setApiError("No account found with these details.");
+      if (!data.state) {
+        setApiError(data.message || "No account found with these details.");
         return;
       }
 

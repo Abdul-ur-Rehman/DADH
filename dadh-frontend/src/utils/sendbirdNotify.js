@@ -1,5 +1,3 @@
-import SendbirdChat from "@sendbird/chat"
-import { GroupChannelModule } from "@sendbird/chat/groupChannel"
 import { jsPDF } from "jspdf"
 
 const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID || ""
@@ -15,6 +13,10 @@ async function getChannel(sb, doctorSbUserId, patientId) {
 }
 
 async function getSbInstance(doctorSbUserId) {
+  const [{ default: SendbirdChat }, { GroupChannelModule }] = await Promise.all([
+    import("@sendbird/chat"),
+    import("@sendbird/chat/groupChannel"),
+  ])
   const sb = SendbirdChat.init({ appId: APP_ID, modules: [new GroupChannelModule()] })
   if (!sb.currentUser) {
     await sb.connect(doctorSbUserId)

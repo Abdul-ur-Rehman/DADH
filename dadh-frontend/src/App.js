@@ -30,10 +30,8 @@ const App = () => {
   let sendbirdUser = localStorage.getItem('sendBirdUserName');
   let sendbirdUserId = localStorage.getItem('sendBirdUserId');
 
-  return (
-    <React.Fragment>
-      <SendbirdProvider appId={APP_ID} userId={sendbirdUserId}>
-        <Routes>
+  const appContent = (
+    <Routes>
 
           {/* Public Auth Routes */}
           {authRoutes.map((route, idx) => (
@@ -65,8 +63,14 @@ const App = () => {
             />
           ))}
 
-        </Routes>
-      </SendbirdProvider>
+    </Routes>
+  )
+
+  return (
+    <React.Fragment>
+      {APP_ID
+        ? <SendbirdProvider appId={APP_ID} userId={sendbirdUserId}>{appContent}</SendbirdProvider>
+        : appContent}
     </React.Fragment>
   );
 };

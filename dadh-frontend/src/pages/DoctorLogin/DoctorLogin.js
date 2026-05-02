@@ -144,6 +144,28 @@ function OtpModal({ onVerify, onClose }) {
 
 // ── Main login component ───────────────────────────────────────────────────────
 
+const LS_ATTEMPTS_KEY = "dadh_doctor_login_attempts";
+
+const loadAttempts = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LS_ATTEMPTS_KEY) || "{}");
+    const now = Date.now();
+    const cleaned = {};
+    Object.entries(stored).forEach(([k, v]) => {
+      cleaned[k] = v.lockUntil && v.lockUntil <= now
+        ? { attempts: 0, lockUntil: null }
+        : v;
+    });
+    return cleaned;
+  } catch {
+    return {};
+  }
+};
+
+const saveAttempts = (map) => {
+  try { localStorage.setItem(LS_ATTEMPTS_KEY, JSON.stringify(map)); } catch {}
+};
+
 const DoctorLogin = () => {
   const navigate = useNavigate();
   const { storeDataInLS } = useAuth();
@@ -162,6 +184,8 @@ const DoctorLogin = () => {
 
   useEffect(() => {
     document.title = "Login | Doctor Portal";
+    attemptsRef.current = loadAttempts();
+
     const forcedLogoutMessage = localStorage.getItem(DOCTOR_FORCED_LOGOUT_MESSAGE_KEY);
     if (forcedLogoutMessage) {
       setApiError(forcedLogoutMessage);
@@ -187,11 +211,11 @@ const DoctorLogin = () => {
     if (lockoutUntil && lockoutUntil <= nowMs) {
       setLockoutUntil(null);
       setApiError("");
-      // Clear the attempts count for the currently-entered prescriber if their lock expired
       const key = String(formData.prescriberNumber || "");
       const entry = attemptsRef.current[key];
       if (entry && entry.lockUntil && entry.lockUntil <= nowMs) {
         attemptsRef.current[key] = { attempts: 0, lockUntil: null };
+        saveAttempts(attemptsRef.current);
       }
     }
   }, [lockoutUntil, nowMs]);
@@ -208,13 +232,15 @@ const DoctorLogin = () => {
     const cleaned = value.replace(/\D/g, "");
     setFormData((p) => ({ ...p, [name]: cleaned }));
     setErrors((p) => ({ ...p, [name]: "" }));
-    setApiError("");
 
-    // If the prescriber number changed, load that user's lockout state
     if (name === "prescriberNumber") {
-      const userKey = cleaned;
-      const entry = attemptsRef.current[userKey];
-      setLockoutUntil(entry && entry.lockUntil ? entry.lockUntil : null);
+      // Switching prescriber — reload that doctor's lockout state and clear any previous error
+      setApiError("");
+      const entry = attemptsRef.current[cleaned];
+      const lock = entry && entry.lockUntil && entry.lockUntil > Date.now() ? entry.lockUntil : null;
+      setLockoutUntil(lock);
+    } else {
+      setApiError("");
     }
   };
 
@@ -253,21 +279,21 @@ const DoctorLogin = () => {
         setShowOtp(true);
       } else if (res.status === 429 || /too many attempts/i.test(data.message || "")) {
         const retryAt = getRateLimitRetryAt(res.headers);
-        // store per-user lockout
         const key = String(formData.prescriberNumber || "");
         attemptsRef.current[key] = { ...(attemptsRef.current[key] || {}), lockUntil: retryAt };
+        saveAttempts(attemptsRef.current);
         setLockoutUntil(retryAt);
       } else {
         // Increment failed attempt for this prescriber only
         const key = String(formData.prescriberNumber || "");
         const prev = attemptsRef.current[key] || { attempts: 0, lockUntil: null };
         const updated = { ...prev, attempts: (prev.attempts || 0) + 1 };
-        // If reached max attempts, set lockUntil
         if (updated.attempts >= MAX_ATTEMPTS) {
           updated.lockUntil = Date.now() + AUTH_LOCKOUT_WINDOW_MS;
           setLockoutUntil(updated.lockUntil);
         }
         attemptsRef.current[key] = updated;
+        saveAttempts(attemptsRef.current);
 
         setApiError(data.message || data.extraDetail || "Doctor not found with provided credentials.");
       }

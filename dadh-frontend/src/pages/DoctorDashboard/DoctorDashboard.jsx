@@ -42,11 +42,15 @@ function DoctorDashboard() {
   const [showActiveWarning, setShowActiveWarning] = useState(false)
   const isMountedRef = useRef(true)
 
+  const patientCacheRef = useRef({})
+  const categoryCacheRef = useRef({})
+
   const fetchData = async () => {
     try {
       const res = await fetch(`${BASE_URL}/consultations/getAll`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const result = await res.json()
-      if (!res.ok || !isMountedRef.current) return
+      if (!isMountedRef.current) return
 
       const all = result.data || []
 
@@ -59,40 +63,54 @@ function DoctorDashboard() {
       }
 
       const waiting = all.filter(c => !c.doctorId || c.doctorId === "")
-      const enriched = await Promise.all(
-        waiting.map(async (c) => {
-          let patientData = {}
-          let categoryName = c.consultationCategory || "General"
-          try {
-            const pr = await fetch(`${BASE_URL}/patient/auth/getOneById/${c.patientId}`)
-            if (pr.ok) { const pd = await pr.json(); patientData = pd.data || {} }
-          } catch {}
-          try {
-            const cr = await fetch(`${BASE_URL}/consultationCategory/getOneByKey`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ key: c.consultationCategory }),
-            })
-            if (cr.ok) { const cd = await cr.json(); categoryName = cd.data?.category || categoryName }
-          } catch {}
-          return {
-            ...c,
-            consultationId: c._id,
-            patientName: patientData.name || "Unknown",
-            patientAge: calculateAge(patientData.DOB),
-            patientGender: patientData.gender || "",
-            consultationCategoryName: categoryName,
-            timeAgo: getTimeAgo(c.createdAt),
-          }
-        })
-      )
 
+      // Show list immediately with placeholders
       if (isMountedRef.current) {
-        setPatients(enriched.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)))
+        setPatients(waiting.map(c => ({
+          ...c,
+          consultationId: c._id,
+          patientName: patientCacheRef.current[c.patientId]?.name || "Loading…",
+          patientAge: patientCacheRef.current[c.patientId] ? calculateAge(patientCacheRef.current[c.patientId].DOB) : "—",
+          patientGender: patientCacheRef.current[c.patientId]?.gender || "",
+          consultationCategoryName: categoryCacheRef.current[c.consultationCategory] || c.consultationCategory || "General",
+          timeAgo: getTimeAgo(c.createdAt),
+        })).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)))
         setLoading(false)
       }
+
+      // Enrich in background — deduplicate lookups
+      const uniquePatientIds = [...new Set(waiting.map(c => c.patientId).filter(Boolean))]
+      const uniqueCategoryKeys = [...new Set(waiting.map(c => c.consultationCategory).filter(Boolean))]
+
+      await Promise.all([
+        ...uniquePatientIds.filter(id => !patientCacheRef.current[id]).map(async (id) => {
+          try {
+            const pr = await fetch(`${BASE_URL}/patient/auth/getOneById/${id}`)
+            if (pr.ok) { const pd = await pr.json(); patientCacheRef.current[id] = pd.data || {} }
+          } catch {}
+        }),
+        ...uniqueCategoryKeys.filter(k => !categoryCacheRef.current[k]).map(async (key) => {
+          try {
+            const cr = await fetch(`${BASE_URL}/consultationCategory/getOneByKey`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key }) })
+            if (cr.ok) { const cd = await cr.json(); if (cd.data?.category) categoryCacheRef.current[key] = cd.data.category }
+          } catch {}
+        }),
+      ])
+
+      if (!isMountedRef.current) return
+
+      setPatients(waiting.map(c => ({
+        ...c,
+        consultationId: c._id,
+        patientName: patientCacheRef.current[c.patientId]?.name || "Unknown",
+        patientAge: calculateAge(patientCacheRef.current[c.patientId]?.DOB),
+        patientGender: patientCacheRef.current[c.patientId]?.gender || "",
+        consultationCategoryName: categoryCacheRef.current[c.consultationCategory] || c.consultationCategory || "General",
+        timeAgo: getTimeAgo(c.createdAt),
+      })).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)))
     } catch (e) {
       console.error("fetchData error:", e)
+      if (isMountedRef.current) setLoading(false)
     }
   }
 

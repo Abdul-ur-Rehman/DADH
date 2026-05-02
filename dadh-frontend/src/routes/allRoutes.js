@@ -60,8 +60,9 @@ import EmailVerification2 from "../pages/AuthenticationInner/auth-email-verifica
 import TwostepVerification from "../pages/AuthenticationInner/auth-two-step-verification";
 import TwostepVerification2 from "../pages/AuthenticationInner/auth-two-step-verification-2";
 
-// Dashboard
+// Dashboard & Landing
 import Dashboard from "../pages/Dashboard/index";
+import ProjectDetailsPage from "../pages/ProjectDetails/ProjectDetailsPage";
 // Charts
 import ChartApex from "../pages/Charts/Apexcharts";
 import ChartistChart from "../pages/Charts/ChartistChart";
@@ -214,7 +215,7 @@ const userRoutes = [
 
 
   // this route should be at the end of all other routes
-  { path: "/", component: <Dashboard /> },
+  { path: "/", component: <ProjectDetailsPage /> },
 ];
 
 const authRoutes = [

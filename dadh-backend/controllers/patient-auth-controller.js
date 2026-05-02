@@ -116,16 +116,19 @@ const login = async (req, res, next) => {
       });
     }
 
-    // 2. Find patient
-    const patient = await Patient.findOne({ medicareNumber, phone, DOB });
-    if (!patient) {
+    // 2. Find patient — use .lean() to return a plain object and bypass the
+    //    mongoose-field-encryption post('init') decryption hook. address/zipCode
+    //    are encrypted at rest with a key we may not have locally; we don't need
+    //    them for login so we skip decryption entirely.
+    const patientDoc = await Patient.findOne({ medicareNumber, phone, DOB }).lean();
+    if (!patientDoc) {
       return res.status(401).json({
         state: false,
         message: "Patient not found with provided credentials.",
       });
     }
 
-    if (patient.status === 0) {
+    if (patientDoc.status === 0) {
       return res.status(403).json({
         state: false,
         message: "Access denied. Your account has been disabled by admin.",
@@ -134,17 +137,18 @@ const login = async (req, res, next) => {
 
     // 3. Generate OTP
     const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
-    // 4. Save OTP + expiry + last login
-    patient.otp = otp;
-    patient.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min expiry
-    patient.lastLogin = new Date();
-    await patient.save();
+    // 4. Save OTP + expiry + last login via updateOne to avoid triggering hooks
+    await Patient.updateOne(
+      { _id: patientDoc._id },
+      { otp, otpExpiry, lastLogin: new Date() }
+    );
 
     // 5. Send OTP via SMS
-    const phoneToSend = patient.phone.startsWith("+")
-      ? patient.phone
-      : "+" + patient.phone;
+    const phoneToSend = patientDoc.phone.startsWith("+")
+      ? patientDoc.phone
+      : "+" + patientDoc.phone;
 
     try {
       await sendSms({
@@ -156,12 +160,18 @@ const login = async (req, res, next) => {
       console.error("❌ SMS sending failed:", smsErr.message);
     }
 
-    // 6. Send response (strip OTP fields from response — kept in DB only for verify step)
-    const { otp: _otp, otpExpiry: _exp, ...patientSafe } = patient.toObject();
+    // 6. Strip internal OTP fields and raw encrypted field values from response
+    const {
+      otp: _otp, otpExpiry: _exp,
+      address: _addr, zipCode: _zip,
+      __enc_address: _ea, __enc_zipCode: _ez,
+      ...patientSafe
+    } = patientDoc;
+
     res.status(200).json({
       state: true,
       message: "OTP sent to your registered phone number.",
-      token: await generateToken(patient, next), // JWT
+      token: await generateToken(patientDoc, next),
       data: patientSafe,
     });
   } catch (err) {
@@ -186,7 +196,8 @@ const verifyOtp = async (req, res, next) => {
       });
     }
 
-    const patient = await Patient.findById(patientId);
+    // Use .lean() to skip decryption hooks; we only need OTP fields here
+    const patient = await Patient.findById(patientId).lean();
     if (!patient) {
       return res.status(404).json({
         state: false,
@@ -194,28 +205,32 @@ const verifyOtp = async (req, res, next) => {
       });
     }
 
-    // ✅ Check OTP validity
     if (patient.otp !== otp) {
       return res.status(401).json({ state: false, message: "Invalid OTP" });
     }
 
-    if (new Date() > patient.otpExpiry) {
+    if (new Date() > new Date(patient.otpExpiry)) {
       return res.status(401).json({ state: false, message: "OTP has expired" });
     }
 
-    // ✅ OTP Verified → Generate token
     const token = await generateToken(patient, next);
 
-    // Clear OTP
-    patient.otp = null;
-    patient.otpExpiry = null;
-    await patient.save();
+    // Clear OTP via updateOne to avoid triggering hooks
+    await Patient.updateOne({ _id: patient._id }, { otp: null, otpExpiry: null });
+
+    // Strip encrypted-at-rest fields and OTP fields from response
+    const {
+      otp: _otp, otpExpiry: _exp,
+      address: _addr, zipCode: _zip,
+      __enc_address: _ea, __enc_zipCode: _ez,
+      ...patientSafe
+    } = patient;
 
     return res.status(200).json({
       state: true,
       message: "OTP verified successfully",
       token,
-      data: patient,
+      data: patientSafe,
     });
   } catch (err) {
     console.error("Verify OTP error:", err);
@@ -239,7 +254,7 @@ const resendOtp = async (req, res, next) => {
       });
     }
 
-    const patient = await Patient.findById(patientId);
+    const patient = await Patient.findById(patientId).lean();
     if (!patient) {
       return res.status(404).json({
         state: false,
@@ -247,13 +262,10 @@ const resendOtp = async (req, res, next) => {
       });
     }
 
-    // ✅ Generate new OTP
     const otp = generateOtp();
-    patient.otp = otp;
-    patient.otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
-    await patient.save();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+    await Patient.updateOne({ _id: patient._id }, { otp, otpExpiry });
 
-    // Send OTP via SMS
     const phoneToSend = patient.phone.startsWith("+")
       ? patient.phone
       : "+" + patient.phone;
@@ -316,11 +328,11 @@ const getAllFamilyMembers = async (req, res) => {
 
 const getAllPatients = async (req, res) => {
   try {
-    const patients = await Patient.find();
+    const patients = await Patient.find().lean();
     res.status(200).json({
       state: true,
       message: "All patients fetched successfully",
-      data: patients,
+      data: patients.map(stripEncryptedFields),
     });
   } catch (err) {
     res.status(500).json({ state: false, message: "Server Error", error: err });
@@ -330,72 +342,56 @@ const getAllPatients = async (req, res) => {
 const updatePatientById = async (req, res, next) => {
   try {
     const {
-      name,
-      email,
-      phone,
-      city,
-      state,
-      DOB,
-      // IRN,
-      medicareNumber,
-      gender,
-      zipCode,
-      allergies,
-      address,
+      name, email, phone, city, state, DOB,
+      medicareNumber, gender, zipCode, allergies, address,
     } = req.body;
-    const patientId = req.params.patientId; // Assuming the patient ID is passed as a parameter
+    const patientId = req.params.patientId;
 
-    // // Check if the patient exists
-    const patient = await Patient.findById({ _id: patientId });
-    if (!patient) {
-      return res
-        .status(404)
-        .json({ state: false, message: "Patient not found" });
+    const exists = await Patient.findById(patientId).lean();
+    if (!exists) {
+      return res.status(404).json({ state: false, message: "Patient not found" });
     }
 
-    // // Check if the new email is already in use by another patient (excluding the current patient)
-    const isEmailExist = await Patient.findOne({
-      email: email,
-      _id: { $ne: patientId },
-    });
-    if (isEmailExist) {
-      return res.status(400).json({
-        state: false,
-        message: "Email is already in use by another patient",
-      });
+    const emailConflict = await Patient.findOne({ email, _id: { $ne: patientId } }).lean();
+    if (emailConflict) {
+      return res.status(400).json({ state: false, message: "Email is already in use by another patient" });
     }
 
-    // // Update the patient's information
-    patient.name = name || patient.name;
-    patient.email = email || patient.email;
-    patient.phone = phone || patient.phone;
-    patient.city = city || patient.city;
-    patient.state = state || patient.state;
-    patient.DOB = DOB || patient.DOB;
-    // patient.IRN = IRN || patient.IRN;
-    patient.medicareNumber = medicareNumber || patient.medicareNumber;
-    patient.gender = gender || patient.gender;
-    patient.zipCode = zipCode || patient.zipCode;
-    patient.allergies = allergies || patient.allergies;
-    patient.address = address || patient.address;
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (email !== undefined) updates.email = email;
+    if (phone !== undefined) updates.phone = phone;
+    if (city !== undefined) updates.city = city;
+    if (state !== undefined) updates.state = state;
+    if (DOB !== undefined) updates.DOB = DOB;
+    if (medicareNumber !== undefined) updates.medicareNumber = medicareNumber;
+    if (gender !== undefined) updates.gender = gender;
+    if (zipCode !== undefined) updates.zipCode = zipCode;
+    if (allergies !== undefined) updates.allergies = allergies;
+    if (address !== undefined) updates.address = address;
 
-    // // Save the updated patient information
-    await patient.save();
+    const updated = await Patient.findByIdAndUpdate(patientId, updates, { new: true }).lean();
 
     res.status(200).json({
       state: true,
       message: "Patient updated successfully",
-      data: patient,
+      data: stripEncryptedFields(updated),
     });
   } catch (err) {
     next(err);
   }
 };
 
+const stripEncryptedFields = (doc) => {
+  if (!doc) return doc
+  const { address: _a, zipCode: _z, __enc_address: _ea, __enc_zipCode: _ez, ...safe } = doc
+  return safe
+}
+
 const getOne = async (req, res, next) => {
   try {
     const patientId = req.params.id;
-    const patient = await Patient.findOne({ _id: patientId });
+    const patient = await Patient.findOne({ _id: patientId }).lean();
     if (!patient) {
       return res
         .status(400)
@@ -403,7 +399,7 @@ const getOne = async (req, res, next) => {
     }
     res.status(200).json({
       state: true,
-      data: patient,
+      data: stripEncryptedFields(patient),
     });
   } catch (error) {
     next(error);
@@ -413,8 +409,7 @@ const getOne = async (req, res, next) => {
 const getOneHome = async (req, res, next) => {
   try {
     const { patientId } = req.body;
-    // console.log("patient id "+patientId);
-    const patient = await Patient.findOne({ _id: patientId });
+    const patient = await Patient.findOne({ _id: patientId }).lean();
     if (!patient) {
       return res
         .status(400)
@@ -422,7 +417,7 @@ const getOneHome = async (req, res, next) => {
     }
     res.status(200).json({
       state: true,
-      data: patient,
+      data: stripEncryptedFields(patient),
     });
   } catch (error) {
     next(error);
@@ -431,16 +426,10 @@ const getOneHome = async (req, res, next) => {
 
 const getAll = async (req, res, next) => {
   try {
-    // const { patientId} = req.body;
-    const patient = await Patient.find();
-    if (!patient) {
-      return res
-        .status(400)
-        .json({ state: false, message: "Patient not found" });
-    }
+    const patients = await Patient.find().lean();
     res.status(200).json({
       state: true,
-      data: patient,
+      data: patients.map(stripEncryptedFields),
     });
   } catch (error) {
     next(error);
@@ -486,14 +475,14 @@ const deleteById = async (req, res) => {
 
 const getPatientById = async (req, res, next) => {
   try {
-    const patient = await Patient.findById(req.params.id);
+    const patient = await Patient.findById(req.params.id).lean();
     if (!patient) {
       return res.status(404).json({ state: false, message: "Patient not found" });
     }
     res.status(200).json({
       state: true,
       message: "Patient fetched successfully",
-      data: patient,
+      data: stripEncryptedFields(patient),
     });
   } catch (err) {
     res.status(500).json({ state: false, message: "Server error", error: err.message });
