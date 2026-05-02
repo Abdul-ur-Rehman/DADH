@@ -70,19 +70,19 @@ const endConsultationForReferral = async (req, res, next) => {
     }
 
     // 🔍 Validate consultation
-    const consultation = await Consultation.findById(consultation_id);
+    const consultation = await Consultation.findById(consultation_id).lean();
     if (!consultation) {
       return res.status(404).json({ state: false, message: "Consultation not found" });
     }
 
     // 🔍 Validate doctor
-    const doctor = await Doctor.findById(doctor_id);
+    const doctor = await Doctor.findById(doctor_id).lean();
     if (!doctor) {
       return res.status(404).json({ state: false, message: "Doctor not found" });
     }
 
     // 🔍 Validate patient
-    const patient = await Patient.findById(patientId);
+    const patient = await Patient.findById(patientId).lean();
     if (!patient) {
       return res.status(404).json({ state: false, message: "Patient not found" });
     }
@@ -102,7 +102,7 @@ const endConsultationForReferral = async (req, res, next) => {
       patientId,
       { assignedDoctorId: null, isConsulting: false },
       { new: true }
-    );
+    ).lean();
 
     if (!updatePatient) {
       return res.status(400).json({ state: false, message: "Patient not updated" });
@@ -130,9 +130,9 @@ const endConsultationForReferral = async (req, res, next) => {
     await Consultation.findByIdAndUpdate(consultation_id, {
       isCompleted: false,
       isConsulting: false,
-    });
+    }).lean();
 
-    const updatedConsultations = await Consultation.find({ patientId });
+    const updatedConsultations = await Consultation.find({ patientId }).lean();
 
     return res.status(200).json({
       state: true,
@@ -301,7 +301,7 @@ const endConsultation = async (req, res, next) => {
     }
 
     // 🔍 Validate consultation
-    const consultation = await Consultation.findById(consultation_id);
+    const consultation = await Consultation.findById(consultation_id).lean();
     if (!consultation) {
       return res
         .status(404)
@@ -309,7 +309,7 @@ const endConsultation = async (req, res, next) => {
     }
 
     // 🔍 Validate doctor
-    const doctor = await Doctor.findById(doctor_id);
+    const doctor = await Doctor.findById(doctor_id).lean();
     if (!doctor) {
       return res
         .status(404)
@@ -317,7 +317,7 @@ const endConsultation = async (req, res, next) => {
     }
 
     // 🔍 Validate patient
-    const patient = await Patient.findById(patientId);
+    const patient = await Patient.findById(patientId).lean();
     if (!patient) {
       return res
         .status(404)
@@ -341,7 +341,7 @@ const endConsultation = async (req, res, next) => {
       patientId,
       { assignedDoctorId: null, isConsulting: false },
       { new: true }
-    );
+    ).lean();
 
     if (!updatePatient) {
       return res
@@ -371,7 +371,7 @@ const endConsultation = async (req, res, next) => {
     await Consultation.findByIdAndUpdate(consultation_id, {
       isCompleted: true,
       isConsulting: false,
-    });
+    }).lean();
 
     // ✅ Prepare dynamic SMS and response message
     let smsBody = `Dear ${patient.name}, `;
@@ -405,7 +405,7 @@ const endConsultation = async (req, res, next) => {
     }
 
     // ✅ Fetch all updated consultations for the patient
-    const updatedConsultations = await Consultation.find({ patientId });
+    const updatedConsultations = await Consultation.find({ patientId }).lean();
 
     return res.status(200).json({
       state: true,

@@ -7,7 +7,7 @@ const validator = (schema) => async (req, res, next) => {
       const message = "Fill the fields properly";
       const status = 422;
       const extraDetail = error.errors[0].message;
-      console.error(error)
+      console.error("Validation error:", error?.message || String(error))
       const errors = {
           status,
           message,

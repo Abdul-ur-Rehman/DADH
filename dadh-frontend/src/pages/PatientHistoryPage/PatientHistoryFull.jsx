@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback, useRef } from "react"
 import RecentHistoryTable from "../PatientHome/RecentHistoryTable"
 import ConsultationDetailModal from "../PatientHistory/ConsultationDetailModal"
 
@@ -29,66 +29,52 @@ function PatientHistoryFull() {
   const [requestingId, setRequestingId] = useState(null)
   const [detailConsult, setDetailConsult] = useState(null)
 
-  const fetchJSON = useCallback(async (url, opts = {}) => {
-    for (let i = 0; i < 3; i++) {
-      try {
-        const res = await fetch(url, opts)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return await res.json()
-      } catch (e) {
-        if (i === 2) throw e
-        await new Promise((r) => setTimeout(r, 1000 * (i + 1)))
-      }
-    }
-  }, [])
+  const doctorCacheRef = useRef({})
+  const categoryCacheRef = useRef({})
 
   const fetchData = useCallback(async () => {
-    if (!patientId) return
+    if (!patientId) { setLoading(false); return }
     try {
-      const res = await fetchJSON(
-        `${BASE_URL}/consultations/getConsulationByPatient/${patientId}`
-      )
-      const completed = (res.data || []).filter((c) => c.isCompleted)
+      const res = await fetch(`${BASE_URL}/consultations/getConsulationByPatient/${patientId}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      const completed = (json.data || []).filter((c) => c.isCompleted)
 
-      const enriched = await Promise.all(
-        completed.map(async (c) => {
-          let doctorInfo = { name: "Unknown", qualification: "", prescriberNumber: "", signature: "" }
-          if (c.doctorId) {
-            try {
-              const dr = await fetchJSON(`${BASE_URL}/doctor-requests/getOneById/${c.doctorId}`)
-              if (dr.state) {
-                doctorInfo = {
-                  name: dr.data.name || "Unknown",
-                  qualification: dr.data.qualification || "",
-                  prescriberNumber: dr.data.prescriberNumber || "",
-                  signature: dr.data.signature || "",
-                }
-              }
-            } catch {}
-          }
+      // Show list immediately, enrich in background
+      completed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      setConsultations(completed)
+      setLoading(false)
 
-          let categoryName = c.consultationCategory
+      const uniqueDoctorIds = [...new Set(completed.map((c) => c.doctorId).filter(Boolean))]
+      const uniqueCategoryKeys = [...new Set(completed.map((c) => c.consultationCategory).filter(Boolean))]
+
+      await Promise.all([
+        ...uniqueDoctorIds.filter((id) => !doctorCacheRef.current[id]).map(async (id) => {
           try {
-            const cat = await fetchJSON(`${BASE_URL}/consultationCategory/getOneByKey`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ key: c.consultationCategory }),
-            })
-            if (cat.state) categoryName = cat.data.category
+            const dr = await fetch(`${BASE_URL}/doctor-requests/getOneById/${id}`).then((r) => r.json())
+            if (dr.state) doctorCacheRef.current[id] = { name: dr.data.name || "Unknown", qualification: dr.data.qualification || "", prescriberNumber: dr.data.prescriberNumber || "", signature: dr.data.signature || "" }
           } catch {}
+        }),
+        ...uniqueCategoryKeys.filter((key) => !categoryCacheRef.current[key]).map(async (key) => {
+          try {
+            const cat = await fetch(`${BASE_URL}/consultationCategory/getOneByKey`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key }) }).then((r) => r.json())
+            if (cat.state) categoryCacheRef.current[key] = cat.data.category
+          } catch {}
+        }),
+      ])
 
-          return { ...c, doctorInfo, categoryName }
-        })
+      setConsultations(
+        completed.map((c) => ({
+          ...c,
+          doctorInfo: doctorCacheRef.current[c.doctorId] || { name: c.doctorId ? "Unknown" : "—", qualification: "", prescriberNumber: "", signature: "" },
+          categoryName: categoryCacheRef.current[c.consultationCategory] || c.consultationCategory,
+        }))
       )
-
-      enriched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      setConsultations(enriched)
     } catch (e) {
       console.error("PatientHistoryFull fetch error:", e)
-    } finally {
       setLoading(false)
     }
-  }, [patientId, fetchJSON])
+  }, [patientId])
 
   useEffect(() => { fetchData() }, [fetchData])
 

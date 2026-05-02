@@ -35,19 +35,14 @@ function PatientHome() {
 
   // Ref tracks active call consultation to avoid stale closure in polling interval
   const callConsultIdRef = useRef(null)
-  const isFirstLoad = useRef(true)
+  const doctorCacheRef = useRef({})
+  const categoryCacheRef = useRef({})
 
-  const fetchJSON = useCallback(async (url, opts = {}) => {
-    for (let i = 0; i < 3; i++) {
-      try {
-        const res = await fetch(url, opts)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return await res.json()
-      } catch (e) {
-        if (i === 2) throw e
-        await new Promise((r) => setTimeout(r, 1000 * (i + 1)))
-      }
-    }
+  // Single-attempt fetch for enrichment data — no retries to avoid blocking the render
+  const fetchEnrich = useCallback(async (url, opts = {}) => {
+    const res = await fetch(url, opts)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return res.json()
   }, [])
 
   const fetchData = useCallback(async () => {
@@ -57,89 +52,78 @@ function PatientHome() {
     }
 
     try {
-      const res = await fetchJSON(
-        `${BASE_URL}/consultations/getConsulationByPatient/${patientId}`
-      )
-      const list = res.data || []
+      const res = await fetch(`${BASE_URL}/consultations/getConsulationByPatient/${patientId}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      const list = json.data || []
 
-      const enriched = await Promise.all(
-        list.map(async (c) => {
-          // Doctor info
-          let doctorInfo = {
-            name: "Assigning...",
-            qualification: "",
-            prescriberNumber: "",
-            signature: "",
+      // Show content immediately with placeholder doctor names — enrich after
+      setConsultations((prev) => {
+        const prevMap = Object.fromEntries(prev.map((c) => [c._id, c]))
+        return list.map((c) => ({ ...prevMap[c._id], ...c }))
+      })
+      setLoading(false)
+
+      // Detect call state from raw data right away
+      for (const c of list) {
+        if (c.isCalling && !c.isCompleted) {
+          if (callConsultIdRef.current !== c._id) {
+            callConsultIdRef.current = c._id
+            setCallState({ isReceivingCall: true, callingDoctor: null, consultationId: c._id, callType: c.type })
           }
-          if (c.doctorId) {
+        } else if (callConsultIdRef.current === c._id && !c.isCalling) {
+          callConsultIdRef.current = null
+          setCallState({ isReceivingCall: false, callingDoctor: null, consultationId: null, callType: null })
+        }
+      }
+
+      // Enrich in background — deduplicate doctor & category lookups
+      const uniqueDoctorIds = [...new Set(list.map((c) => c.doctorId).filter(Boolean))]
+      const uniqueCategoryKeys = [...new Set(list.map((c) => c.consultationCategory).filter(Boolean))]
+
+      await Promise.all([
+        ...uniqueDoctorIds
+          .filter((id) => !doctorCacheRef.current[id])
+          .map(async (id) => {
             try {
-              const dr = await fetchJSON(
-                `${BASE_URL}/doctor-requests/getOneById/${c.doctorId}`
-              )
-              if (dr.state) {
-                doctorInfo = {
-                  name: dr.data.name || "Unknown",
-                  qualification: dr.data.qualification || "",
-                  prescriberNumber: dr.data.prescriberNumber || "",
-                  signature: dr.data.signature || "",
-                }
-              }
+              const dr = await fetchEnrich(`${BASE_URL}/doctor-requests/getOneById/${id}`)
+              if (dr.state) doctorCacheRef.current[id] = { name: dr.data.name || "Unknown", qualification: dr.data.qualification || "", prescriberNumber: dr.data.prescriberNumber || "", signature: dr.data.signature || "" }
             } catch {}
-          }
+          }),
+        ...uniqueCategoryKeys
+          .filter((key) => !categoryCacheRef.current[key])
+          .map(async (key) => {
+            try {
+              const cat = await fetchEnrich(`${BASE_URL}/consultationCategory/getOneByKey`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key }) })
+              if (cat.state) categoryCacheRef.current[key] = cat.data.category
+            } catch {}
+          }),
+      ])
 
-          // Incoming call detection — use ref to avoid stale closure
-          if (c.isCalling && !c.isCompleted) {
-            if (callConsultIdRef.current !== c._id) {
-              callConsultIdRef.current = c._id
-              setCallState({
-                isReceivingCall: true,
-                callingDoctor: doctorInfo.name,
-                consultationId: c._id,
-                callType: c.type,
-              })
-            }
-          } else if (callConsultIdRef.current === c._id && !c.isCalling) {
-            callConsultIdRef.current = null
-            setCallState({
-              isReceivingCall: false,
-              callingDoctor: null,
-              consultationId: null,
-              callType: null,
-            })
-          }
+      // Apply enrichment to the list
+      const enriched = list.map((c) => ({
+        ...c,
+        doctorInfo: doctorCacheRef.current[c.doctorId] || { name: c.doctorId ? "Unknown" : "Assigning...", qualification: "", prescriberNumber: "", signature: "" },
+        categoryName: categoryCacheRef.current[c.consultationCategory] || c.consultationCategory,
+      }))
 
-          // Category name
-          let categoryName = c.consultationCategory
-          try {
-            const cat = await fetchJSON(
-              `${BASE_URL}/consultationCategory/getOneByKey`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ key: c.consultationCategory }),
-              }
-            )
-            if (cat.state) categoryName = cat.data.category
-          } catch {}
-
-          return { ...c, doctorInfo, categoryName }
-        })
-      )
+      // Update call state with resolved doctor name
+      for (const c of enriched) {
+        if (callConsultIdRef.current === c._id && c.doctorInfo?.name) {
+          setCallState((p) => ({ ...p, callingDoctor: c.doctorInfo.name }))
+        }
+      }
 
       setConsultations(enriched)
     } catch (e) {
       console.error("PatientHome fetch error:", e)
-    } finally {
-      if (isFirstLoad.current) {
-        setLoading(false)
-        isFirstLoad.current = false
-      }
+      setLoading(false)
     }
-  }, [patientId, fetchJSON])
+  }, [patientId, fetchEnrich])
 
   useEffect(() => {
     fetchData()
-    const id = setInterval(fetchData, 3000)
+    const id = setInterval(fetchData, 15000)
     return () => clearInterval(id)
   }, [fetchData])
 

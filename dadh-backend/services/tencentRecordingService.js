@@ -11,9 +11,10 @@ const REGION = process.env.TENCENT_REGION;
 const TRTC_SECRET_KEY = process.env.TRTC_SECRET_KEY;
 const COS_BUCKET = process.env.TENCENT_BUCKET;
 
-if (!SECRET_ID || !SECRET_KEY || !APP_ID || !TRTC_SECRET_KEY || !COS_BUCKET || !REGION) {
-  throw new Error("Missing Tencent Cloud environment variables");
-}
+const tencentConfigured = SECRET_ID && SECRET_KEY && APP_ID && TRTC_SECRET_KEY && COS_BUCKET && REGION;
+const assertTencentConfig = () => {
+  if (!tencentConfigured) throw new Error("Missing Tencent Cloud environment variables");
+};
 // ----------------------------------------------------------
 
 // TRTC UserSig Generator
@@ -68,6 +69,7 @@ function getAuthHeaders(service, action, payload) {
 }
 
 async function startRecording(roomId, userId = "recorder_bot") {
+  assertTencentConfig();
   if (!roomId) throw new Error("roomId is required");
 
   const recordUserSig = genUserSig(APP_ID, TRTC_SECRET_KEY, userId);
@@ -122,6 +124,7 @@ async function startRecording(roomId, userId = "recorder_bot") {
 
 // Stop Cloud Recording
 async function stopRecording(taskId, roomId) {
+  assertTencentConfig();
   if (!taskId || !roomId) throw new Error("taskId and roomId are required");
 
   const body = {

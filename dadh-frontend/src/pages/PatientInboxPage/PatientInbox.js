@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import SendbirdChat from "@sendbird/chat"
-import { GroupChannelModule, GroupChannelHandler } from "@sendbird/chat/groupChannel"
 
 const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"
 const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID
+
+// Populated on first Sendbird init; avoids static top-level imports that crash Safari
+let _GroupChannelHandler = null
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,11 @@ export default function PatientInbox() {
 
     const init = async () => {
       try {
+        const [{ default: SendbirdChat }, sbGroupCh] = await Promise.all([
+          import("@sendbird/chat"),
+          import("@sendbird/chat/groupChannel"),
+        ])
+        _GroupChannelHandler = sbGroupCh.GroupChannelHandler
         instance = SendbirdChat.init({
           appId: APP_ID,
           modules: [new GroupChannelModule()],
@@ -225,7 +231,7 @@ function InboxContent({ sb, patient, userId }) {
 
     const handlerKey = `patient-inbox-${channel.url}-${Date.now()}`
     handlerKeyRef.current = handlerKey
-    sb.groupChannel.addGroupChannelHandler(handlerKey, new GroupChannelHandler({
+    sb.groupChannel.addGroupChannelHandler(handlerKey, new _GroupChannelHandler({
       onMessageReceived(ch, msg) {
         if (ch?.url !== channel.url) return
         setMessages((prev) => [...prev, msg])

@@ -173,30 +173,29 @@ const getConsultations = async (req, res, next) => {
 
 const getAllConsultations = async (req, res, next) => {
   try {
-    // 1. Sab uncompleted consultations nikaalo
-    const consultations = await Consultation.find({ isCompleted: false });
+    const consultations = await Consultation.find({ isCompleted: false }).lean();
 
     const now = new Date();
+    const expireIds = consultations
+      .filter((c) => !c.doctorId && !c.isExpired && (now - new Date(c.createdAt)) / 3600000 >= 12)
+      .map((c) => c._id);
 
-    for (let cons of consultations) {
-      // 2. Agar doctor assign nahi hai aur 12h cross ho gaye
-      if (!cons.doctorId) {
-        const created = new Date(cons.createdAt);
-        const hoursPassed = (now - created) / (1000 * 60 * 60);
-
-        if (hoursPassed >= 12 && !cons.isExpired) {
-          cons.isExpired = true;  // field update
-          await cons.save();      // DB me save karo
-        }
-      }
+    if (expireIds.length) {
+      await Consultation.updateMany({ _id: { $in: expireIds } }, { isExpired: true });
+      expireIds.forEach((id) => {
+        const c = consultations.find((x) => String(x._id) === String(id));
+        if (c) c.isExpired = true;
+      });
     }
 
-    // 3. Response bhejo
+    // Strip internal encryption flag fields
+    const safe = consultations.map(({ __enc_notes: _n, __enc_AIScribeNote: _a, ...c }) => c);
+
     return res.status(200).json({
       state: true,
-      count: consultations.length,
+      count: safe.length,
       message: "Consultations retrieved successfully",
-      data: consultations,
+      data: safe,
     });
   } catch (err) {
     next(err);
@@ -319,8 +318,10 @@ const getBillingsByDoctorId = async (req, res, next) => {
 const getOneById = async (req, res, next) => {
   try {
     const consultationId = req.params.id;
-    const records = await Consultation.findOne({ _id: consultationId });
+    const records = await Consultation.findOne({ _id: consultationId }).lean();
     if (records) {
+      delete records.__enc_notes;
+      delete records.__enc_AIScribeNote;
       return res.status(200).json({
         data: records,
       });
@@ -337,10 +338,10 @@ const getOneById = async (req, res, next) => {
 
 const getHistoryPatient = async (req, res) => {
   try {
-    const consultations = await Consultation.find({ patientId: req.params.patientId });
+    const consultations = await Consultation.find({ patientId: req.params.patientId }).lean();
     res.json({
       state: true,
-      data: consultations
+      data: consultations.map(({ __enc_notes: _n, __enc_AIScribeNote: _a, ...c }) => c),
     });
   } catch (err) {
     res.status(500).json({ state: false, message: err.message });
@@ -433,13 +434,17 @@ const getConsultationByPatient = async (req, res, next) => {
         .json({ state: false, message: "Invalid Patient ID" });
     }
 
-    /* fetch consultations for the patient — no .lean() so field-encryption init hook fires */
-    const docs = await Consultation.find({ patientId }).sort({ _id: -1 });
+    // .lean() bypasses the mongoose-field-encryption post('init') hook; notes/AIScribeNote
+    // remain as encrypted ciphertext when the local ENCRYPTION_KEY doesn't match the DB key.
+    const docs = await Consultation.find({ patientId }).sort({ _id: -1 }).lean();
 
     /* attach totalAmount from billing codes */
     const enriched = await Promise.all(
       docs.map(async (doc) => {
-        const c = doc.toObject(); // plain object after decryption
+        const c = { ...doc };
+        // Strip internal encryption flag fields from the response
+        delete c.__enc_notes;
+        delete c.__enc_AIScribeNote;
         let total = 0;
 
         if (c.billCodes?.length) {
@@ -570,7 +575,7 @@ const assignConsultToDoctor = async (req, res, next) => {
       });
     }
 
-    const consultation = await Consultation.findById(consultationId);
+    const consultation = await Consultation.findById(consultationId).lean();
     if (!consultation) {
       return res.status(404).json({ state: false, message: "Consultation not found" });
     }
@@ -581,7 +586,7 @@ const assignConsultToDoctor = async (req, res, next) => {
       patientId,
       { $set: { assignedDoctorId: doctorId, isConsulting: true } },
       { new: true }
-    );
+    ).lean();
     if (!patient) {
       return res.status(400).json({ state: false, message: "Patient not updated" });
     }
@@ -673,7 +678,7 @@ const requeuePatient = async (req, res) => {
     }
 
     // Find consultation
-    const consultation = await Consultation.findOne({ _id: consultationId });
+    const consultation = await Consultation.findOne({ _id: consultationId }).lean();
 
     if (!consultation) {
       return res.status(404).json({
@@ -957,11 +962,12 @@ const getIncompleteBillingConsultations = async (req, res, next) => {
       doctorId: doctorId,
       isCompleted: true,
       createdAt: { $gte: sevenDaysAgo, $lte: new Date() },
-    }).sort({ _id: -1 });
+    }).sort({ _id: -1 }).lean();
 
+    const safe = consultations.map(({ __enc_notes: _n, __enc_AIScribeNote: _a, ...c }) => c);
     res
       .status(200)
-      .json({ state: true, coutn: consultations.length, data: consultations });
+      .json({ state: true, count: safe.length, data: safe });
   } catch (error) {
     next(error);
   }

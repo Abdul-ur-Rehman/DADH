@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react"
-import SendbirdChat from "@sendbird/chat"
-import { GroupChannelModule, GroupChannelHandler } from "@sendbird/chat/groupChannel"
 import DoctorAppLayout from "../../components/DoctorLayout/DoctorAppLayout"
 
 const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID || ""
+
+// Populated after first dynamic import — avoids static top-level imports that crash Safari
+let _GroupChannelHandler = null
 
 function timeLabel(ts) {
   if (!ts) return ""
@@ -26,10 +27,15 @@ function DoctorInboxNew() {
   const handlerKeyRef = useRef(null)
 
   useEffect(() => {
-    if (!APP_ID || !doctorUserId) return
+    if (!APP_ID || !doctorUserId) { setLoadingChannels(false); return }
     let isMounted = true
     const init = async () => {
       try {
+        const [{ default: SendbirdChat }, { GroupChannelModule, GroupChannelHandler }] = await Promise.all([
+          import("@sendbird/chat"),
+          import("@sendbird/chat/groupChannel"),
+        ])
+        _GroupChannelHandler = GroupChannelHandler
         const instance = SendbirdChat.init({ appId: APP_ID, modules: [new GroupChannelModule()] })
         await instance.connect(doctorUserId)
         sbRef.current = instance
@@ -74,7 +80,7 @@ function DoctorInboxNew() {
     if (sbRef.current) {
       const handlerKey = `doctor-inbox-${channel.url}-${Date.now()}`
       handlerKeyRef.current = handlerKey
-      sbRef.current.groupChannel.addGroupChannelHandler(handlerKey, new GroupChannelHandler({
+      sbRef.current.groupChannel.addGroupChannelHandler(handlerKey, new _GroupChannelHandler({
         onMessageReceived(ch, msg) {
           if (ch?.url !== channel.url) return
           setMessages(prev => [...prev, msg])
@@ -136,7 +142,9 @@ function DoctorInboxNew() {
           <div style={{ flex: 1, overflowY: "auto" }}>
             {loadingChannels && <div style={{ padding: 24, textAlign: "center", color: "#94A3B8", fontSize: 13 }}>Loading…</div>}
             {!loadingChannels && channels.length === 0 && (
-              <div style={{ padding: 24, textAlign: "center", color: "#94A3B8", fontSize: 13 }}>Your Inbox is Empty</div>
+              <div style={{ padding: 24, textAlign: "center", color: "#94A3B8", fontSize: 13 }}>
+                {!APP_ID ? "Chat not configured" : "Your Inbox is Empty"}
+              </div>
             )}
             {channels.map(ch => (
               <div

@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from "react"
-import SendbirdChat from "@sendbird/chat"
-import { GroupChannelModule, GroupChannelHandler } from "@sendbird/chat/groupChannel"
 
 const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID || ""
 const CLINICAL_URL = "dadh-clinical"
@@ -90,6 +88,10 @@ function ChatPanel({ doctorId }) {
 
     const init = async () => {
       try {
+        const [{ default: SendbirdChat }, { GroupChannelModule, GroupChannelHandler }] = await Promise.all([
+          import("@sendbird/chat"),
+          import("@sendbird/chat/groupChannel"),
+        ])
         const sb = SendbirdChat.init({ appId: APP_ID, modules: [new GroupChannelModule()] })
         sbRef.current = sb
         await sb.connect(sbUserId)
