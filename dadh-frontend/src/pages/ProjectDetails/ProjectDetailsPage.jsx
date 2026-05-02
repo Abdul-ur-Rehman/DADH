@@ -271,7 +271,6 @@ export default function ProjectDetailsPage() {
 
       <footer className="project-footer">
         <p>Dial A Home Doctor - Australian Telemedicine Platform</p>
-        <p className="footer-text">For more information, refer to CLAUDE.md and the project documentation</p>
       </footer>
     </div>
   );
