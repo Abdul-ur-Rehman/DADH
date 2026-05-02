@@ -39,14 +39,14 @@ const InboxIcon = () => (
 
 const NAV_ITEMS = [
   { label: "Dashboard",     href: "/admin/home",                  end: true, icon: <DashboardIcon /> },
-  { label: "Doctors",       href: "/admin/doctorRequests/table",             icon: <DoctorIcon /> },
-  { label: "Patients",      href: "/admin/patientDetails/table",             icon: <PatientIcon /> },
-  { label: "Consultations", href: "/admin/Consultations",                    icon: <ConsultIcon /> },
+  { label: "Doctors",       href: "/admin/doctor-requests/table",             icon: <DoctorIcon /> },
+  { label: "Patients",      href: "/admin/patient-details/table",             icon: <PatientIcon /> },
+  { label: "Consultations", href: "/admin/consultations",                    icon: <ConsultIcon /> },
   { label: "Settings",      href: "/admin/settings",                         icon: <SettingsIcon /> },
   { label: "Inbox",         href: "/admin/inbox",                            icon: <InboxIcon /> },
 ]
 
-function AdminAppLayout({ children }) {
+function AdminAppLayout({ children, mainStyle }) {
   const navigate = useNavigate()
   const handleLogout = () => {
     localStorage.clear()
@@ -59,6 +59,7 @@ function AdminAppLayout({ children }) {
       user={{ name: "Admin", role: "Administrator" }}
       onLogout={handleLogout}
       logo={logo}
+      mainStyle={mainStyle}
     >
       {children}
     </AppLayout>

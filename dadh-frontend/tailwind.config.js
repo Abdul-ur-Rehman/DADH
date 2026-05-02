@@ -31,6 +31,7 @@ module.exports = {
     "./src/pages/AdminSettingsNew/**/*.{js,jsx}",
     "./src/pages/AdminLoginNew/**/*.{js,jsx}",
     "./src/components/AdminLayout/**/*.{js,jsx}",
+    "./src/pages/AdminInbox/**/*.{js,jsx}",
   ],
 
   // Add `dadh-` prefix optional? No — kept simple. Conflicts with Bootstrap class

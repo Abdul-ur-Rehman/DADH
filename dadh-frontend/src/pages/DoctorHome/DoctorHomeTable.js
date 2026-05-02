@@ -170,7 +170,7 @@
 //                 <Button
 //                   color="primary"
 //                   onClick={() =>
-//                     navigate(`/doctor/startConsult/${consultationId}/details`)
+//                     navigate(`/doctor/start-consult/${consultationId}/details`)
 //                   }
 //                 >
 //                   Return to Consult
@@ -211,7 +211,7 @@
 //                       onClick={() => {
 //                         if (!isConsulting) {
 //                           navigate(
-//                             `/doctor/startConsult/${patient.consultationId}`
+//                             `/doctor/start-consult/${patient.consultationId}`
 //                           );
 //                         }
 //                       }}
@@ -572,7 +572,7 @@ const handleReturnToConsult = async () => {
       console.error("Failed to fetch patient for consultPatientData:", e);
     }
 
-    navigate(`/doctor/startConsult/${consultationId}/details`);
+    navigate(`/doctor/start-consult/${consultationId}/details`);
   } catch (error) {
     console.error("Failed to fetch consultation data:", error);
   }
@@ -621,7 +621,7 @@ const handleReturnToConsult = async () => {
                   }}
                   onClick={() => {
                     if (!isConsulting) {
-                      navigate(`/doctor/startConsult/${patient.consultationId}`);
+                      navigate(`/doctor/start-consult/${patient.consultationId}`);
                     }
                   }}
                 >
@@ -673,7 +673,7 @@ const handleReturnToConsult = async () => {
                       background: "#ffffff",
                     }}
                     onClick={() =>
-                      navigate(`/doctor/startConsult/${patient.consultationId}`)
+                      navigate(`/doctor/start-consult/${patient.consultationId}`)
                     }
                   >
                     <div className="icon-wrapper">

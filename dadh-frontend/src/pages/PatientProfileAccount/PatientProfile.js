@@ -194,11 +194,18 @@ export default function PatientProfile() {
       })
       const json = await res.json()
       if (!res.ok || !json.state) throw new Error(json.message || `Save failed`)
-      setPatientData(json.data || editedPatient)
-      setEditedPatient(json.data || editedPatient)
+      const updatedData = json.data || editedPatient
+      setPatientData(updatedData)
+      setEditedPatient(updatedData)
       setEditMode(false)
       setSaveOk(true)
       setTimeout(() => setSaveOk(false), 3000)
+      try {
+        const stored = JSON.parse(localStorage.getItem("patientData")) || {}
+        stored.data = { ...(stored.data || {}), ...updatedData }
+        localStorage.setItem("patientData", JSON.stringify(stored))
+        window.dispatchEvent(new CustomEvent("patientProfileUpdated"))
+      } catch {}
     } catch (e) {
       alert(`Save failed: ${e.message}`)
     } finally {

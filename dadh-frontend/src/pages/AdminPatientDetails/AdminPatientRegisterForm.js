@@ -78,7 +78,7 @@ const AdminPatientRegisterForm = () => {
             icon: "success",
             html: '<span class="toast-title">Patient successfully added</span>',
           });
-          navigate("/admin/patientDetails/table");
+          navigate("/admin/patient-details/table");
         } else {
           const data = await response.json();
           setError(data.message || "Registration failed. Please try again.");

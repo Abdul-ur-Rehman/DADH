@@ -1,0 +1,386 @@
+<h2>Doctor Dashboard — 3 Full Designs</h2>
+<p class="subtitle">Same layout (sidebar + queue + collapsible chat). Different visual treatments. Pick the one that feels most professional.</p>
+
+<div class="cards">
+
+  <!-- Design 1: Clean Clinical -->
+  <div class="card" data-choice="1" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0">
+      <div style="display:flex;height:320px;font-family:'Segoe UI',system-ui;font-size:11px">
+
+        <!-- Sidebar -->
+        <div style="width:150px;background:#0D7377;display:flex;flex-direction:column;flex-shrink:0">
+          <div style="padding:16px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.12)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:30px;height:30px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#0D7377;flex-shrink:0">D</div>
+              <div><div style="color:white;font-size:10px;font-weight:700;line-height:1.2">DADH</div><div style="color:rgba(255,255,255,0.55);font-size:8px">Doctor Portal</div></div>
+            </div>
+          </div>
+          <div style="padding:10px 10px;display:flex;flex-direction:column;gap:2px;flex:1">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.18);border-radius:7px;padding:8px 10px">
+              <span style="font-size:12px">🏠</span>
+              <span style="color:white;font-size:9px;font-weight:600">Dashboard</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.6">💬</span>
+              <span style="color:rgba(255,255,255,0.65);font-size:9px">Inbox</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.6">📋</span>
+              <span style="color:rgba(255,255,255,0.65);font-size:9px">History</span>
+              <div style="margin-left:auto;background:#F59E0B;color:white;font-size:7px;font-weight:700;padding:1px 5px;border-radius:8px">3</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.6">💳</span>
+              <span style="color:rgba(255,255,255,0.65);font-size:9px">Billing</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.6">⚙️</span>
+              <span style="color:rgba(255,255,255,0.65);font-size:9px">Settings</span>
+            </div>
+          </div>
+          <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.12)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;flex-shrink:0">DS</div>
+              <div><div style="color:white;font-size:9px;font-weight:600">Dr. Smith</div><div style="display:flex;align-items:center;gap:3px"><div style="width:5px;height:5px;background:#22C55E;border-radius:50%"></div><span style="color:rgba(255,255,255,0.5);font-size:7px">Online</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main area -->
+        <div style="flex:1;background:#F8FFFE;display:flex;flex-direction:column;overflow:hidden">
+          <!-- Top bar -->
+          <div style="background:white;border-bottom:1px solid #E8F4F4;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#111E1F">Good morning, Dr. Smith 👋</div>
+              <div style="font-size:9px;color:#4B7172">Monday, 28 April 2026</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="background:#F0FDFA;border:1px solid #D1E8E8;border-radius:20px;padding:4px 10px;font-size:8px;color:#0D7377;font-weight:600">● Available</div>
+              <div style="width:28px;height:28px;background:#E8F4F4;border-radius:50%"></div>
+            </div>
+          </div>
+
+          <!-- Content row -->
+          <div style="flex:1;display:flex;gap:0;overflow:hidden">
+            <!-- Queue -->
+            <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:10px;font-weight:700;color:#111E1F">Patients Waiting <span style="background:#EF4444;color:white;font-size:7px;padding:1px 5px;border-radius:8px;margin-left:4px">3</span></div>
+                <div style="font-size:8px;color:#4B7172">Auto-refresh 5s</div>
+              </div>
+              <!-- Patient row 1 - highlighted -->
+              <div style="background:white;border:1.5px solid #0D7377;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(13,115,119,0.08)">
+                <div style="width:32px;height:32px;background:#0D7377;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;flex-shrink:0">JM</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:9px;font-weight:600;color:#111E1F">John Mitchell, 45M</div>
+                  <div style="font-size:8px;color:#4B7172">General Consultation • Video</div>
+                </div>
+                <div style="font-size:7px;color:#94A3B8;white-space:nowrap">3 min ago</div>
+                <div style="background:#0D7377;color:white;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap">Accept</div>
+              </div>
+              <!-- Patient row 2 -->
+              <div style="background:white;border:1px solid #E8F4F4;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                <div style="width:32px;height:32px;background:#E8F4F4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0D7377;font-weight:700;flex-shrink:0">SR</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:9px;font-weight:600;color:#111E1F">Sarah Roberts, 32F</div>
+                  <div style="font-size:8px;color:#4B7172">Medical Certificate • Audio</div>
+                </div>
+                <div style="font-size:7px;color:#94A3B8;white-space:nowrap">5 min ago</div>
+                <div style="background:white;border:1px solid #D1E8E8;color:#0D7377;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap">Accept</div>
+              </div>
+              <!-- Patient row 3 -->
+              <div style="background:white;border:1px solid #E8F4F4;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                <div style="width:32px;height:32px;background:#E8F4F4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0D7377;font-weight:700;flex-shrink:0">TK</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:9px;font-weight:600;color:#111E1F">Tom Kaur, 28M</div>
+                  <div style="font-size:8px;color:#4B7172">Prescription Renewal • Chat</div>
+                </div>
+                <div style="font-size:7px;color:#94A3B8;white-space:nowrap">8 min ago</div>
+                <div style="background:white;border:1px solid #D1E8E8;color:#0D7377;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap">Accept</div>
+              </div>
+            </div>
+
+            <!-- Chat panel -->
+            <div style="width:170px;background:white;border-left:1px solid #E8F4F4;display:flex;flex-direction:column;flex-shrink:0">
+              <div style="display:flex;border-bottom:1px solid #E8F4F4;flex-shrink:0">
+                <div style="flex:1;padding:8px 0;text-align:center;font-size:8px;font-weight:700;color:#0D7377;border-bottom:2px solid #0D7377;margin-bottom:-1px">Clinical</div>
+                <div style="flex:1;padding:8px 0;text-align:center;font-size:8px;color:#64748B;position:relative">
+                  Dispatcher
+                  <div style="position:absolute;top:6px;right:10px;width:5px;height:5px;background:#F59E0B;border-radius:50%"></div>
+                </div>
+                <div style="padding:0 8px;display:flex;align-items:center;color:#94A3B8;font-size:12px;cursor:pointer">›</div>
+              </div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:4px;overflow:hidden">
+                <div style="font-size:7px;color:#4B7172;font-weight:600">John Mitchell — Active</div>
+                <div style="background:#F0FDFA;border-radius:6px 6px 6px 0;padding:5px 7px;font-size:8px;color:#0D7377;max-width:90%">Hello, how are you today?</div>
+                <div style="background:#0D7377;border-radius:6px 6px 0 6px;padding:5px 7px;font-size:8px;color:white;max-width:90%;align-self:flex-end">Not great, bad headache</div>
+                <div style="background:#F0FDFA;border-radius:6px 6px 6px 0;padding:5px 7px;font-size:8px;color:#0D7377;max-width:90%">How long has that been?</div>
+              </div>
+              <div style="padding:8px;border-top:1px solid #E8F4F4;flex-shrink:0">
+                <div style="background:#F8FFFE;border:1px solid #D1E8E8;border-radius:8px;padding:5px 8px;display:flex;gap:6px;align-items:center">
+                  <div style="flex:1;font-size:8px;color:#94A3B8">Type a message…</div>
+                  <div style="background:#0D7377;border-radius:5px;padding:3px 7px;font-size:7px;color:white;font-weight:600">Send</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Design 1 — Clean Clinical</h3>
+      <p>Pure white cards on a very light teal background. Teal sidebar. First patient row is highlighted with a teal border to show queue priority. Minimal, professional, easy to scan.</p>
+    </div>
+  </div>
+
+  <!-- Design 2: Dark Sidebar + Rich Cards -->
+  <div class="card" data-choice="2" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0">
+      <div style="display:flex;height:320px;font-family:'Segoe UI',system-ui;font-size:11px">
+
+        <!-- Dark sidebar -->
+        <div style="width:150px;background:#111E1F;display:flex;flex-direction:column;flex-shrink:0">
+          <div style="padding:16px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.08)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:30px;height:30px;background:#0D7377;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:white;flex-shrink:0">D</div>
+              <div><div style="color:white;font-size:10px;font-weight:700;line-height:1.2">DADH</div><div style="color:rgba(255,255,255,0.35);font-size:8px">Doctor Portal</div></div>
+            </div>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:1px;flex:1">
+            <div style="display:flex;align-items:center;gap:8px;background:#0D7377;border-radius:7px;padding:8px 10px">
+              <span style="font-size:12px">🏠</span>
+              <span style="color:white;font-size:9px;font-weight:600">Dashboard</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.5">💬</span>
+              <span style="color:rgba(255,255,255,0.5);font-size:9px">Inbox</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.5">📋</span>
+              <span style="color:rgba(255,255,255,0.5);font-size:9px">History</span>
+              <div style="margin-left:auto;background:#F59E0B;color:white;font-size:7px;font-weight:700;padding:1px 5px;border-radius:8px">3</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.5">💳</span>
+              <span style="color:rgba(255,255,255,0.5);font-size:9px">Billing</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px">
+              <span style="font-size:12px;opacity:0.5">⚙️</span>
+              <span style="color:rgba(255,255,255,0.5);font-size:9px">Settings</span>
+            </div>
+          </div>
+          <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.08)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;background:#0D7377;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;flex-shrink:0">DS</div>
+              <div><div style="color:white;font-size:9px;font-weight:600">Dr. Smith</div><div style="display:flex;align-items:center;gap:3px"><div style="width:5px;height:5px;background:#22C55E;border-radius:50%"></div><span style="color:rgba(255,255,255,0.4);font-size:7px">Online</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main -->
+        <div style="flex:1;background:#F4F7F7;display:flex;flex-direction:column;overflow:hidden">
+          <!-- Header -->
+          <div style="background:white;border-bottom:1px solid #E2E8F0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#111E1F">Dashboard</div>
+              <div style="font-size:9px;color:#64748B">Monday, 28 April 2026</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="background:#DCFCE7;border-radius:20px;padding:4px 10px;font-size:8px;color:#16A34A;font-weight:600">● Available</div>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;gap:0;overflow:hidden">
+            <!-- Queue -->
+            <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:6px;overflow:hidden">
+              <div style="font-size:10px;font-weight:700;color:#111E1F">Patients Waiting <span style="background:#EF4444;color:white;font-size:7px;padding:1px 6px;border-radius:10px;margin-left:4px">3</span></div>
+
+              <div style="background:white;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+                <div style="width:34px;height:34px;background:linear-gradient(135deg,#0D7377,#14B8A6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:700;flex-shrink:0">JM</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:10px;font-weight:700;color:#111E1F">John Mitchell</div>
+                  <div style="font-size:8px;color:#64748B">45M • Video • General Consultation</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:7px;color:#94A3B8;margin-bottom:4px">3 min</div>
+                  <div style="background:#0D7377;color:white;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px">Accept</div>
+                </div>
+              </div>
+
+              <div style="background:white;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+                <div style="width:34px;height:34px;background:#E2E8F0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#64748B;font-weight:700;flex-shrink:0">SR</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:10px;font-weight:700;color:#111E1F">Sarah Roberts</div>
+                  <div style="font-size:8px;color:#64748B">32F • Audio • Medical Certificate</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:7px;color:#94A3B8;margin-bottom:4px">5 min</div>
+                  <div style="background:white;border:1px solid #D1E8E8;color:#0D7377;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px">Accept</div>
+                </div>
+              </div>
+
+              <div style="background:white;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+                <div style="width:34px;height:34px;background:#E2E8F0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#64748B;font-weight:700;flex-shrink:0">TK</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:10px;font-weight:700;color:#111E1F">Tom Kaur</div>
+                  <div style="font-size:8px;color:#64748B">28M • Chat • Prescription Renewal</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:7px;color:#94A3B8;margin-bottom:4px">8 min</div>
+                  <div style="background:white;border:1px solid #D1E8E8;color:#0D7377;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px">Accept</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat -->
+            <div style="width:170px;background:white;border-left:1px solid #E2E8F0;display:flex;flex-direction:column;flex-shrink:0">
+              <div style="display:flex;border-bottom:1px solid #E2E8F0;flex-shrink:0;background:#FAFAFA">
+                <div style="flex:1;padding:8px 0;text-align:center;font-size:8px;font-weight:700;color:#0D7377;border-bottom:2px solid #0D7377;margin-bottom:-1px">Clinical</div>
+                <div style="flex:1;padding:8px 0;text-align:center;font-size:8px;color:#64748B;position:relative">Dispatcher<div style="position:absolute;top:6px;right:8px;width:5px;height:5px;background:#F59E0B;border-radius:50%"></div></div>
+                <div style="padding:0 8px;display:flex;align-items:center;color:#94A3B8;font-size:12px">›</div>
+              </div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:5px;overflow:hidden">
+                <div style="font-size:7px;color:#4B7172;font-weight:600">John Mitchell — Active</div>
+                <div style="background:#F0FDFA;border-radius:8px 8px 8px 2px;padding:5px 8px;font-size:8px;color:#0D7377">Hello, how are you today?</div>
+                <div style="background:#0D7377;border-radius:8px 8px 2px 8px;padding:5px 8px;font-size:8px;color:white;align-self:flex-end">Not great, bad headache</div>
+              </div>
+              <div style="padding:8px;border-top:1px solid #E2E8F0">
+                <div style="background:#F8FFFE;border:1.5px solid #D1E8E8;border-radius:10px;padding:5px 8px;display:flex;gap:6px;align-items:center">
+                  <div style="flex:1;font-size:8px;color:#94A3B8">Message…</div>
+                  <div style="background:#0D7377;border-radius:6px;padding:3px 8px;font-size:7px;color:white;font-weight:600">Send</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Design 2 — Dark Sidebar + Elevated Cards</h3>
+      <p>Near-black sidebar for strong contrast. Light grey background with white floating cards and subtle shadows. Gradient avatar for the top patient. Feels modern and premium.</p>
+    </div>
+  </div>
+
+  <!-- Design 3: Teal Immersive -->
+  <div class="card" data-choice="3" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0">
+      <div style="display:flex;height:320px;font-family:'Segoe UI',system-ui;font-size:11px">
+
+        <!-- Teal sidebar -->
+        <div style="width:150px;background:#0D7377;display:flex;flex-direction:column;flex-shrink:0">
+          <div style="padding:16px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.12)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:30px;height:30px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#0D7377;flex-shrink:0">D</div>
+              <div><div style="color:white;font-size:10px;font-weight:700">DADH</div><div style="color:rgba(255,255,255,0.5);font-size:8px">Doctor Portal</div></div>
+            </div>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:1px;flex:1">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.18);border-radius:7px;padding:8px 10px">
+              <span style="font-size:12px">🏠</span><span style="color:white;font-size:9px;font-weight:600">Dashboard</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px">
+              <span style="font-size:12px;opacity:0.55">💬</span><span style="color:rgba(255,255,255,0.6);font-size:9px">Inbox</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px">
+              <span style="font-size:12px;opacity:0.55">📋</span><span style="color:rgba(255,255,255,0.6);font-size:9px">History</span>
+              <div style="margin-left:auto;background:#F59E0B;color:white;font-size:7px;font-weight:700;padding:1px 5px;border-radius:8px">3</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px">
+              <span style="font-size:12px;opacity:0.55">💳</span><span style="color:rgba(255,255,255,0.6);font-size:9px">Billing</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px">
+              <span style="font-size:12px;opacity:0.55">⚙️</span><span style="color:rgba(255,255,255,0.6);font-size:9px">Settings</span>
+            </div>
+          </div>
+          <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.12)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700">DS</div>
+              <div><div style="color:white;font-size:9px;font-weight:600">Dr. Smith</div><div style="font-size:7px;color:rgba(255,255,255,0.45)">● Online</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main - teal top banner -->
+        <div style="flex:1;background:#F8FFFE;display:flex;flex-direction:column;overflow:hidden">
+          <!-- Teal header -->
+          <div style="background:linear-gradient(135deg,#0D7377 0%,#14B8A6 100%);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:white">Good morning, Dr. Smith</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.75)">You have 3 patients waiting</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.2);border-radius:20px;padding:4px 10px;font-size:8px;color:white;font-weight:600">● Available</div>
+          </div>
+
+          <div style="flex:1;display:flex;gap:0;overflow:hidden">
+            <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:6px;overflow:hidden">
+              <div style="font-size:10px;font-weight:700;color:#111E1F">Queue <span style="background:#EF4444;color:white;font-size:7px;padding:1px 6px;border-radius:10px;margin-left:4px">3</span></div>
+
+              <!-- Top patient — teal card -->
+              <div style="background:linear-gradient(135deg,#0D7377,#0A9396);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:700;flex-shrink:0">JM</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:10px;font-weight:700;color:white">John Mitchell</div>
+                  <div style="font-size:8px;color:rgba(255,255,255,0.75)">45M • Video • General</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:7px;color:rgba(255,255,255,0.6);margin-bottom:4px">3 min</div>
+                  <div style="background:white;color:#0D7377;font-size:8px;font-weight:700;padding:4px 10px;border-radius:6px">Accept</div>
+                </div>
+              </div>
+
+              <div style="background:white;border:1px solid #E8F4F4;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;background:#E8F4F4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0D7377;font-weight:700;flex-shrink:0">SR</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:10px;font-weight:700;color:#111E1F">Sarah Roberts</div>
+                  <div style="font-size:8px;color:#64748B">32F • Audio • Medical Certificate</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:7px;color:#94A3B8;margin-bottom:4px">5 min</div>
+                  <div style="background:white;border:1px solid #D1E8E8;color:#0D7377;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px">Accept</div>
+                </div>
+              </div>
+
+              <div style="background:white;border:1px solid #E8F4F4;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;background:#E8F4F4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0D7377;font-weight:700;flex-shrink:0">TK</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:10px;font-weight:700;color:#111E1F">Tom Kaur</div>
+                  <div style="font-size:8px;color:#64748B">28M • Chat • Prescription</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:7px;color:#94A3B8;margin-bottom:4px">8 min</div>
+                  <div style="background:white;border:1px solid #D1E8E8;color:#0D7377;font-size:8px;font-weight:600;padding:4px 10px;border-radius:6px">Accept</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat -->
+            <div style="width:170px;background:white;border-left:1px solid #E8F4F4;display:flex;flex-direction:column;flex-shrink:0">
+              <div style="display:flex;border-bottom:1px solid #E8F4F4;flex-shrink:0">
+                <div style="flex:1;padding:8px 0;text-align:center;font-size:8px;font-weight:700;color:#0D7377;border-bottom:2px solid #0D7377;margin-bottom:-1px">Clinical</div>
+                <div style="flex:1;padding:8px 0;text-align:center;font-size:8px;color:#64748B;position:relative">Dispatcher<div style="position:absolute;top:6px;right:8px;width:5px;height:5px;background:#F59E0B;border-radius:50%"></div></div>
+                <div style="padding:0 8px;display:flex;align-items:center;color:#94A3B8;font-size:12px">›</div>
+              </div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:5px;overflow:hidden">
+                <div style="font-size:7px;color:#4B7172;font-weight:600">John Mitchell — Active</div>
+                <div style="background:#F0FDFA;border-radius:8px 8px 8px 2px;padding:5px 8px;font-size:8px;color:#0D7377">Hello, how are you today?</div>
+                <div style="background:#0D7377;border-radius:8px 8px 2px 8px;padding:5px 8px;font-size:8px;color:white;align-self:flex-end">Bad headache since morning</div>
+              </div>
+              <div style="padding:8px;border-top:1px solid #E8F4F4">
+                <div style="background:#F8FFFE;border:1.5px solid #D1E8E8;border-radius:10px;padding:5px 8px;display:flex;gap:6px;align-items:center">
+                  <div style="flex:1;font-size:8px;color:#94A3B8">Message…</div>
+                  <div style="background:#0D7377;border-radius:6px;padding:3px 8px;font-size:7px;color:white;font-weight:600">Send</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Design 3 — Teal Immersive</h3>
+      <p>Teal gradient header banner with contextual message ("3 patients waiting"). First patient card is full teal — draws the eye immediately. Most on-brand, highest energy.</p>
+    </div>
+  </div>
+
+</div>

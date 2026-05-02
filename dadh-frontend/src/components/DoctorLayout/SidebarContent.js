@@ -153,7 +153,7 @@ const handleLogout = () => {
             </li>
 
             <li>
-              <Link to="/doctor/consultHistory" className="waves-effect">
+              <Link to="/doctor/consult-history" className="waves-effect">
                 <UserCheck size={18} className="me-2" />
                 <span>{props.t("Consult History")}</span>
                 {certPendingCount > 0 && (
@@ -167,21 +167,21 @@ const handleLogout = () => {
             </li>
 
             <li>
-              <Link to="/doctor/billingpage" className="waves-effect">
+              <Link to="/doctor/billing" className="waves-effect">
                 <CreditCard size={18} className="me-2" />
                 <span>{props.t("Billing")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/doctor/supportcard" className="waves-effect">
+              <Link to="/doctor/support-card" className="waves-effect">
                 <Headphones size={18} className="me-2" />
                 <span>{props.t("Support")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/doctor/myAccount" className="waves-effect">
+              <Link to="/doctor/my-account" className="waves-effect">
                 <Users size={18} className="me-2" />
                 <span>{props.t("My Account")}</span>
               </Link>

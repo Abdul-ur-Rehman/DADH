@@ -1,28 +1,18 @@
 import React from "react";
+import { Navigate } from "react-router-dom";
 
-// admin login
-
-import AdminConsultationCetgoryPage from "../pages/AdminConsultationCetgory/AdminConsultationCetgoryPage";
-import AdminDoctorRequestPage from "../pages/AdminDoctorRequest/AdminDoctorRequestPage";
-import AdminBillingCodePage from "../pages/AdminBillingCode/AdminBillingCodePage";
-import AdminLoginPage from "../pages/AdminLogin/AdminLoginPage";
-import AdminPatientDetailsPage from "../pages/AdminPatientDetails/AdminPatientDetailsPage";
+// admin — new Phase 6 pages
 import AddConsultationCategoryForm from "../pages/AdminConsultationCetgory/AddConsultationCategoryForm";
 import EditConsultCategory from "../pages/AdminConsultationCetgory/EditConsultCategory";
 import PatientDetailsForm from "../pages/AdminPatientDetails/PatientDetailsForm";
 import DoctorRequestForm from "../pages/AdminDoctorRequest/DoctorRequestForm";
 import AdminPatientRegisterForm from "../pages/AdminPatientDetails/AdminPatientRegisterForm";
 
-// doctor Login
+// doctor — new Phase 5 pages
 import Doctor2faPage from "../pages/Doctor2fa/Doctor2faPage";
 import DoctorStartConsultPage from "../pages/DoctorStatConsult/DoctorStartConsultPage";
-import ConsultationDetailsPage from "../pages/DoctorConsultDetails/ConsultDetailsPage";
-import DoctortConsultHistorPage from "../pages/DoctorConsultHistory/DoctorConsultHistoryPage";
 import DoctorLoginPage from "../pages/DoctorLogin/DoctorLoginPage";
-import DoctorMyAccountPage from "../pages/DoctorMyAccount/DoctorMyAccountPage";
-import DoctorInboxPage from "pages/DoctorInbox/DoctorInboxPage";
 import SupportPage from "../pages/DoctorSupport/SupportPage";
-import BillingPage from "../pages/DoctorBilling/BillingPage";
 import PatientDetailForm from "../pages/DoctorConsultDetails/Modals/PatientDetailForm";
 import DoctorDashboard from "pages/DoctorDashboard/DoctorDashboard";
 import DoctorConsultDetailsNew from "pages/DoctorConsultDetails/DoctorConsultDetailsNew";
@@ -145,9 +135,7 @@ import ConsultationCategorySelector from "pages/PatientConsultationSelector/Cons
 import PatientStep2 from "pages/PatientConsultationSelector/PatientStep2";
 import PatientRegisterPage from "../pages/PatientRegister/PatientRegisterPage";
 import PatientHome from "pages/PatientHome/PatientHome";
-import DoctorHomePage from "pages/DoctorHome/DoctorHomePage";
 import AdminInboxPage from "pages/AdminInbox/AdminInboxPage";
-import AdminPatientRegister from "pages/AdminPatientDetails/AdminPatientRegisterForm";
 import PatientInboxPage from "pages/PatientInboxPage/PatientInboxPage";
 
 // import TRTCChat from "pages/DoctorHome/TRTCChat";
@@ -158,12 +146,9 @@ import DoctorAudioCallPage from "pages/DoctorAudioCall/DoctorAudioCallPage";
 import PatientProfilePage from "pages/PatientProfileAccount/PatientProfilePage";
 // import PatientCertifyPage from "pages/PatientCertify/PatientCertifyPage";
 // import PatientConsultHistoryPage from "pages/PatientConsult/PatientConsultHistoryPage";
-import AdminDashboard from "pages/AdminDashboard/AdminDashboard";
 import AdminModelPage from "pages/AdminModel/AdminModelPage";
 import AdminModelTable from "pages/AdminModel/AdminModelTable";
 import AdminDetailsForm from "pages/AdminModel/AdminDetailsForm";
-import BillingDetails from "pages/AdminBillingDetails/BillingDetails";
-import AdminHome from "pages/AdminHome/AdminHome";
 import AdminLoginNew from "pages/AdminLoginNew/AdminLoginNew";
 import AdminHomeDashboard from "pages/AdminHomeDashboard/AdminHomeDashboard";
 import AdminDoctorsNew from "pages/AdminDoctorsNew/AdminDoctorsNew";
@@ -183,19 +168,20 @@ const userRoutes = [
 
   // ADMIN
 
+  { path: "/admin", component: <Navigate to="/admin/home" replace />, allowedRoles: ['admin'] },
   { path: "/admin/dashboard", component: <AdminHomeDashboard />, allowedRoles: ['admin'] },
   { path: "/admin/home", component: <AdminHomeDashboard />, allowedRoles: ['admin'] },
-  { path: "/admin/Consultations", component: <AdminConsultationsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/consultations", component: <AdminConsultationsNew />, allowedRoles: ['admin'] },
   { path: "/admin/inbox", component: <AdminInboxPage />, allowedRoles: ['admin'] },
-  { path: "/admin/doctorRequests/table", component: <AdminDoctorsNew />, allowedRoles: ['admin'] },
-  { path: "/admin/patientDetails/table", component: <AdminPatientsNew />, allowedRoles: ['admin'] },
-  { path: "/admin/patientdetailsForm/:id", component: <PatientDetailsForm />, allowedRoles: ['admin'] },
+  { path: "/admin/doctor-requests/table", component: <AdminDoctorsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/patient-details/table", component: <AdminPatientsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/patient-details-form/:id", component: <PatientDetailsForm />, allowedRoles: ['admin'] },
   { path: "/add/patient-register/", component: <AdminPatientRegisterForm />, allowedRoles: ['admin'] },
-  { path: "/admin/billingCode/table", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
-  { path: "/admin/consultationCategory/table", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/billing-code/table", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
+  { path: "/admin/consultation-category/table", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
   { path: "/admin/settings", component: <AdminSettingsNew />, allowedRoles: ['admin'] },
-  { path: "/admin/doctorDetails/form/:id", component: <DoctorRequestForm />, allowedRoles: ['admin'] },
-  { path: "/add/consultationCategory", component: <AddConsultationCategoryForm />, allowedRoles: ['admin'] },
+  { path: "/admin/doctor-details/form/:id", component: <DoctorRequestForm />, allowedRoles: ['admin'] },
+  { path: "/add/consultation-category", component: <AddConsultationCategoryForm />, allowedRoles: ['admin'] },
   { path: "/edit-category/:id", component: <EditConsultCategory />, allowedRoles: ['admin'] },
   { path: "/admin/register/form", component: <AdminModelPage />, allowedRoles: ['admin'] },
   { path: "/admin/details/table", component: <AdminModelTable />, allowedRoles: ['admin'] },
@@ -206,23 +192,22 @@ const userRoutes = [
   // DOCTOR
   { path: "/doctor", component: <DoctorDashboard />, allowedRoles: ['doctor'] },
   { path: "/doctor/inbox", component: <DoctorInboxNew />, allowedRoles: ['doctor'] },
-  { path: "/doctor/consultHistory", component: <DoctorHistoryNew />, allowedRoles: ['doctor'] },
-  { path: "/doctor/myAccount", component: <DoctorSettings />, allowedRoles: ['doctor'] },
+  { path: "/doctor/consult-history", component: <DoctorHistoryNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/my-account", component: <DoctorSettings />, allowedRoles: ['doctor'] },
   { path: "/doctor/settings", component: <DoctorSettings />, allowedRoles: ['doctor'] },
   { path: "/doctor/billing", component: <DoctorBillingNew />, allowedRoles: ['doctor'] },
-  { path: "/doctor/billingpage", component: <DoctorBillingNew />, allowedRoles: ['doctor'] },
   { path: "/doctor/support", component: <SupportPage />, allowedRoles: ['doctor'] },
-  { path: "/doctor/startConsult/:id", component: <DoctorStartConsultPage />, allowedRoles: ['doctor'] },
-  { path: "/doctor/startConsult/:id/details", component: <DoctorConsultDetailsNew />, allowedRoles: ['doctor'] },
-  { path: "/doctor/startConsult/:id/details/video", component: <DoctorVideoCallPage />, allowedRoles: ['doctor'] },
-  { path: "/doctor/startConsult/:id/details/Audio", component: <DoctorAudioCallPage />, allowedRoles: ['doctor'] },
-  { path: "/doctor/supportcard", component: <SupportPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/start-consult/:id", component: <DoctorStartConsultPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/start-consult/:id/details", component: <DoctorConsultDetailsNew />, allowedRoles: ['doctor'] },
+  { path: "/doctor/start-consult/:id/details/video", component: <DoctorVideoCallPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/start-consult/:id/details/audio", component: <DoctorAudioCallPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor/support-card", component: <SupportPage />, allowedRoles: ['doctor'] },
 
 
   // PATIENT
   { path: "/patient", component: <PatientHome />, allowedRoles: ['patient'] },
   { path: "/patient/inbox", component: <PatientInboxPage />, allowedRoles: ['patient'] },
-  { path: "/patient/detailform", component: <PatientDetailForm />, allowedRoles: ['patient'] },
+  { path: "/patient/detail-form", component: <PatientDetailForm />, allowedRoles: ['patient'] },
   { path: "/patient/history", component: <PatientHistoryFull />, allowedRoles: ['patient'] },
   { path: "/patient/profile", component: <PatientProfilePage />, allowedRoles: ['patient'] },
   // { path: "/patient/consulthistory", component: <PatientConsultHistoryPage />, allowedRoles: ['patient'] },
@@ -236,10 +221,10 @@ const authRoutes = [
   { path: "/admin/login", component: <AdminLoginNew />, allowedRoles: ['patient'] },
 
   { path: "/doctor/login", component: <DoctorLoginPage />, allowedRoles: ['doctor'] },
-  { path: "/doctor-2fa", component: <Doctor2faPage />, allowedRoles: ['doctor'] },
+  { path: "/doctor-2fa", component: <Navigate to="/doctor/login" replace />, allowedRoles: ['doctor'] },
 
 
-  { path: "/patient/Login", component: <PatientLoginPage />, allowedRoles: ['patient'] },
+  { path: "/patient/login", component: <PatientLoginPage />, allowedRoles: ['patient'] },
   { path: "/patient/2fa", component: <Patient2faPage />, allowedRoles: ['patient'] },
   { path: "/patient/register", component: <PatientRegisterPage />, allowedRoles: ['patient'] },
   { path: "/consult/patient", component: <ConsultationCategorySelector />, allowedRoles: ['patient'] },

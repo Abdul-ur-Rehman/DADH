@@ -1,7 +1,9 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import AppLayout from "../ui/AppLayout"
 import logo from "../../assets/images/logo-dark.png"
+
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"
 
 const HomeIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -37,22 +39,70 @@ const NAV_ITEMS = [
   { label: "Profile", href: "/patient/profile",            icon: <ProfileIcon /> },
 ]
 
+const readPatient = () => {
+  try { return JSON.parse(localStorage.getItem("patientData"))?.data || {} }
+  catch { return {} }
+}
+
 function PatientAppLayout({ children }) {
   const navigate = useNavigate()
 
-  const patient = (() => {
-    try { return JSON.parse(localStorage.getItem("patientData"))?.data || {} }
-    catch { return {} }
-  })()
+  const [patientData, setPatientData] = useState(readPatient)
+  const patientId = patientData._id
+
+  useEffect(() => {
+    const refresh = () => setPatientData(readPatient())
+    window.addEventListener("patientProfileUpdated", refresh)
+    return () => window.removeEventListener("patientProfileUpdated", refresh)
+  }, [])
+
+  const [bookHovered, setBookHovered] = useState(false)
+  const [hasActiveConsult, setHasActiveConsult] = useState(false)
+
+  useEffect(() => {
+    if (!patientId) return
+    let cancelled = false
+    const check = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/consultations/getConsulationByPatient/${patientId}`)
+        const data = await res.json()
+        if (!cancelled) {
+          const list = data.data || []
+          setHasActiveConsult(list.some(c => !c.isCompleted))
+        }
+      } catch {}
+    }
+    check()
+    const id = setInterval(check, 8000)
+    return () => { cancelled = true; clearInterval(id) }
+  }, [patientId])
 
   const handleLogout = () => {
     localStorage.clear()
-    navigate("/patient/Login")
+    navigate("/patient/login")
   }
 
-  const [bookHovered, setBookHovered] = React.useState(false)
-
-  const bookButton = (
+  const bookButton = hasActiveConsult ? (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{
+        fontSize: 12, color: "#92400E", background: "#FEF3C7",
+        border: "1px solid #F59E0B", borderRadius: 6,
+        padding: "4px 10px", fontWeight: 600, whiteSpace: "nowrap",
+      }}>
+        Consultation in progress
+      </span>
+      <button
+        disabled
+        style={{
+          background: "#CBD5E1", color: "#94A3B8", border: "none",
+          borderRadius: 8, padding: "9px 18px", fontSize: 14, fontWeight: 600,
+          cursor: "not-allowed", whiteSpace: "nowrap",
+        }}
+      >
+        + Book Consultation
+      </button>
+    </div>
+  ) : (
     <button
       onClick={() => navigate("/consult/patient")}
       onMouseEnter={() => setBookHovered(true)}
@@ -77,7 +127,7 @@ function PatientAppLayout({ children }) {
   return (
     <AppLayout
       navItems={NAV_ITEMS}
-      user={{ name: patient.name || "Patient", role: "Patient" }}
+      user={{ name: patientData.name || "Patient", role: "Patient" }}
       onLogout={handleLogout}
       logo={logo}
       headerRight={bookButton}

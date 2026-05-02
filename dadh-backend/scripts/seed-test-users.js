@@ -1,84 +1,91 @@
-require("dotenv").config();
+/**
+ * Seed script — safe to re-run (idempotent)
+ * 1. Updates ALL existing patient + doctor phones starting with "91" → "92"
+ * 2. Creates Test Patient 2 (if not already present)
+ * 3. Creates Test Doctor 2  (if not already present)
+ */
 const mongoose = require("mongoose");
+require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
+
 const Patient = require("../models/patient-model");
-const Admin = require("../models/admin-model");
-const hashPassword = require("../utils/hash-password");
+const Doctor  = require("../models/doctor-model");
 
-const TEST_PATIENT = {
-  name: "Test Patient",
-  email: "test.patient@dadh.local",
-  phone: "911234567890",
-  city: "Sydney",
-  state: "NSW",
-  DOB: "1990-01-15",
-  medicareNumber: "1234567890",
-  gender: "male",
-  status: 1,
-  address: "123 George Street, Sydney NSW",
-  zipCode: "2000",
-};
+async function run() {
+  await mongoose.connect(process.env.URI, {
+    connectTimeoutMS: 60000,
+    socketTimeoutMS: 60000,
+  });
+  console.log("DB connected");
 
-const TEST_ADMIN = {
-  username: "testadmin",
-  email: "test.admin@dadh.local",
-  passwordPlain: "Admin@123",
-  level: "superadmin",
-  status: 1,
-};
-
-(async () => {
-  try {
-    await mongoose.connect(process.env.URI);
-    console.log("Connected to MongoDB\n");
-
-    // ─── PATIENT ──────────────────────────────────────────────────────
-    // Lookup by email (NOT encrypted) so this works regardless of whether
-    // PII encryption is enabled. Always delete+recreate so encrypted fields
-    // get freshly encrypted at create time.
-    await Patient.deleteMany({ email: TEST_PATIENT.email });
-    const p = await Patient.create(TEST_PATIENT);
-    console.log("Created test patient:", p._id.toString());
-
-    // ─── ADMIN ────────────────────────────────────────────────────────
-    const hashed = await hashPassword(TEST_ADMIN.passwordPlain, (err) => {
-      if (err) throw err;
-    });
-    const adminFields = {
-      username: TEST_ADMIN.username,
-      email: TEST_ADMIN.email,
-      password: hashed,
-      level: TEST_ADMIN.level,
-      status: TEST_ADMIN.status,
-    };
-    const existingAdmin = await Admin.findOne({ username: TEST_ADMIN.username });
-    if (existingAdmin) {
-      Object.assign(existingAdmin, adminFields);
-      await existingAdmin.save();
-      console.log("Updated existing test admin:", existingAdmin._id.toString());
-    } else {
-      const a = await Admin.create(adminFields);
-      console.log("Created test admin:", a._id.toString());
-    }
-
-    console.log("\n=== PATIENT LOGIN CREDENTIALS ===");
-    console.log("Medicare Number:", TEST_PATIENT.medicareNumber);
-    console.log("Phone Number:   ", TEST_PATIENT.phone);
-    console.log("Date of Birth:  ", TEST_PATIENT.DOB);
-    console.log("(OTP appears in login API response → data.otp)");
-
-    console.log("\n=== ADMIN LOGIN CREDENTIALS ===");
-    console.log("Username:", TEST_ADMIN.username);
-    console.log("Password:", TEST_ADMIN.passwordPlain);
-    console.log("Level:   ", TEST_ADMIN.level, "(can manage other admins)");
-    console.log("(No OTP — backend returns token immediately)\n");
-
-    await mongoose.disconnect();
-    process.exit(0);
-  } catch (err) {
-    console.error("\nSeed failed:", err.message);
-    if (err.errors) {
-      Object.entries(err.errors).forEach(([k, v]) => console.error(`  - ${k}: ${v.message}`));
-    }
-    process.exit(1);
+  // 1. Patch existing phones 91... -> 92...
+  const patients = await Patient.find({ phone: /^91/ });
+  for (const p of patients) {
+    const oldPhone = p.phone;
+    p.phone = "92" + p.phone.slice(2);
+    await p.save();
+    console.log(`Patient "${p.name}" phone: ${oldPhone} -> ${p.phone}`);
   }
-})();
+
+  const doctors = await Doctor.find({ phone: /^91/ });
+  for (const d of doctors) {
+    const oldPhone = d.phone;
+    d.phone = "92" + d.phone.slice(2);
+    await d.save();
+    console.log(`Doctor "${d.name} ${d.surname}" phone: ${oldPhone} -> ${d.phone}`);
+  }
+
+  // 2. New Test Patient 2
+  const existingP2 = await Patient.findOne({ medicareNumber: "9876543210" });
+  if (existingP2) {
+    console.log("Patient 2 already exists - skipping");
+  } else {
+    await Patient.create({
+      name:           "Test Patient 2",
+      email:          "patient2@test.com",
+      phone:          "921234567891",
+      city:           "Sydney",
+      state:          "NSW",
+      DOB:            "1992-08-15",
+      medicareNumber: "9876543210",
+      address:        "2 Collins Street",
+      zipCode:        "2000",
+      gender:         "female",
+      status:         1,
+    });
+    console.log("Created Test Patient 2");
+  }
+
+  // 3. New Test Doctor 2
+  const existingD2 = await Doctor.findOne({ prescriberNumber: 101 });
+  if (existingD2) {
+    console.log("Doctor 2 already exists - skipping");
+  } else {
+    await Doctor.create({
+      name:             "Test",
+      surname:          "Doctor2",
+      email:            "doctor2@test.com",
+      phone:            "929876543211",
+      city:             "Melbourne",
+      state:            "VIC",
+      doctorType:       "General Practitioner",
+      isHomeVisit:      "no",
+      workType:         "Full Time",
+      startDate:        new Date("2020-01-01"),
+      howFind:          "Referral",
+      gender:           "Male",
+      prescriberNumber: 101,
+      providerNumber:   1000001,
+      qualification:    "MBBS",
+      status:           1,
+    });
+    console.log("Created Test Doctor 2");
+  }
+
+  console.log("\nDone");
+  await mongoose.disconnect();
+}
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

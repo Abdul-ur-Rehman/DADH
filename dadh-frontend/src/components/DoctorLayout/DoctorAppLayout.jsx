@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import AppLayout from "../ui/AppLayout"
 import logo from "../../assets/images/logo-dark.png"
@@ -40,30 +40,42 @@ const SettingsIcon = () => (
 const NAV_ITEMS = [
   { label: "Home",     href: "/doctor",                end: true, icon: <HomeIcon /> },
   { label: "Inbox",    href: "/doctor/inbox",                     icon: <InboxIcon /> },
-  { label: "History",  href: "/doctor/consultHistory",            icon: <HistoryIcon /> },
+  { label: "History",  href: "/doctor/consult-history",            icon: <HistoryIcon /> },
   { label: "Billing",  href: "/doctor/billing",                   icon: <BillingIcon /> },
   { label: "Settings", href: "/doctor/settings",                  icon: <SettingsIcon /> },
 ]
 
-function DoctorAppLayout({ children }) {
-  const navigate = useNavigate()
+const readDoctorData = () => {
+  try { return JSON.parse(localStorage.getItem("data"))?.data || {} }
+  catch { return {} }
+}
 
-  const doctorData = (() => {
-    try { return JSON.parse(localStorage.getItem("data"))?.data || {} }
-    catch { return {} }
-  })()
+function DoctorAppLayout({ children, mainStyle }) {
+  const navigate = useNavigate()
+  const [doctorData, setDoctorData] = useState(readDoctorData)
+
+  useEffect(() => {
+    const refresh = () => setDoctorData(readDoctorData())
+    window.addEventListener("doctorProfileUpdated", refresh)
+    return () => window.removeEventListener("doctorProfileUpdated", refresh)
+  }, [])
 
   const handleLogout = () => {
     localStorage.clear()
     navigate("/doctor/login")
   }
 
+  const photoSrc = doctorData.photo
+    ? (doctorData.photo.startsWith("data:") ? doctorData.photo : `data:image/jpeg;base64,${doctorData.photo}`)
+    : ""
+
   return (
     <AppLayout
       navItems={NAV_ITEMS}
-      user={{ name: doctorData.name || "Doctor", role: "Doctor" }}
+      user={{ name: doctorData.name || "Doctor", role: "Doctor", photo: photoSrc }}
       onLogout={handleLogout}
       logo={logo}
+      mainStyle={mainStyle}
     >
       {children}
     </AppLayout>

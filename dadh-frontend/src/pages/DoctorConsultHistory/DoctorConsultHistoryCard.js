@@ -393,8 +393,8 @@ import { useNavigate } from "react-router-dom";
 import { Row, Col } from "reactstrap";
 import { Checkbox } from "@mui/material";
 import "./DoctorConsultHistoryCard.css";
-import CertifyModal from "../DoctorConsultDetails/Modals/CertifyModal";
-import BillingModal from "../DoctorConsultDetails/Modals/BillingModal";
+import CertifyConsultModal from "../DoctorConsultDetails/Modals/CertifyConsultModal";
+import BillingConsultModal from "../DoctorConsultDetails/Modals/BillingConsultModal";
 import { PhoneCallIcon, VideoIcon, MessageSquareIcon } from "lucide-react";
 
 const DoctorConsultHistoryCard = () => {
@@ -677,16 +677,19 @@ const DoctorConsultHistoryCard = () => {
       </Row>
 
       {/* Modals */}
-      <CertifyModal
-        show={showCertifyModal}
-        handleClose={() => setShowCertifyModal(false)}
-        patient={selectedPatient}
-      />
-      <BillingModal
-        show={showBillingModal}
-        handleClose={() => setShowBillingModal(false)}
-        patient={selectedPatient}
-      />
+      {showCertifyModal && selectedPatient && (
+        <CertifyConsultModal
+          consultationId={selectedPatient._id}
+          patient={{ _id: selectedPatient.patientId, name: selectedPatient.patientName }}
+          onClose={() => { setShowCertifyModal(false); setSelectedPatient(null) }}
+        />
+      )}
+      {showBillingModal && selectedPatient && (
+        <BillingConsultModal
+          consultationId={selectedPatient._id}
+          onClose={() => { setShowBillingModal(false); setSelectedPatient(null) }}
+        />
+      )}
     </div>
   );
 };

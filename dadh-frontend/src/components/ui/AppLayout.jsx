@@ -12,7 +12,7 @@ function getInitials(name = "") {
  * headerRight: ReactNode shown in topbar right slot
  * onLogout: () => void
  */
-function AppLayout({ navItems = [], user = {}, onLogout, children, logo, headerRight }) {
+function AppLayout({ navItems = [], user = {}, onLogout, children, logo, headerRight, mainStyle }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [hovered, setHovered] = useState(null)
   const close = useCallback(() => setSidebarOpen(false), [])
@@ -105,9 +105,13 @@ function AppLayout({ navItems = [], user = {}, onLogout, children, logo, headerR
                 fontWeight: 700,
                 color: "#0D7377",
                 flexShrink: 0,
+                overflow: "hidden",
               }}
             >
-              {getInitials(user.name)}
+              {user.photo
+                ? <img src={user.photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : getInitials(user.name)
+              }
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#111E1F", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -166,7 +170,7 @@ function AppLayout({ navItems = [], user = {}, onLogout, children, logo, headerR
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto" style={{ padding: "24px 28px" }}>
+        <main className="flex-1 overflow-y-auto" style={{ padding: "24px 28px", ...mainStyle }}>
           {children}
         </main>
       </div>

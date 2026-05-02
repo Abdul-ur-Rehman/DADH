@@ -57,6 +57,9 @@ function PatientQueueRow({ patient, isFirst, onClick }) {
           {patient.consultationCategory === "medicalCertificate" && (
             <span style={{ fontSize: 11, background: "#F0FDFA", color: "#0D7377", border: "1px solid #0D7377", borderRadius: 12, padding: "1px 8px", fontWeight: 600 }}>Express</span>
           )}
+          {patient.requiresMedicalCertificate && (
+            <span style={{ fontSize: 11, background: "#FEF3C7", color: "#92400E", border: "1px solid #F59E0B", borderRadius: 12, padding: "1px 8px", fontWeight: 600 }}>📋 Med Certificate</span>
+          )}
         </div>
         <div style={{ fontSize: 12, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {label}

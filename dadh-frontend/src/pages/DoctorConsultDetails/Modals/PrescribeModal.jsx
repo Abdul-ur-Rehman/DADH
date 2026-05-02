@@ -1,4 +1,7 @@
 import React, { useState } from "react"
+import { sendChatNotification } from "../../../utils/sendbirdNotify"
+
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api"
 
 function ModalShell({ title, onClose, children }) {
   return (
@@ -14,7 +17,7 @@ function ModalShell({ title, onClose, children }) {
   )
 }
 
-function PrescribeModal({ onClose, consultationId }) {
+function PrescribeModal({ onClose, consultationId, patientId }) {
   const [searchType, setSearchType] = useState("product")
   const [medication, setMedication] = useState("")
   const [dose, setDose] = useState("")
@@ -23,14 +26,54 @@ function PrescribeModal({ onClose, consultationId }) {
   const [duration, setDuration] = useState("")
   const [instructions, setInstructions] = useState("")
   const [brandName, setBrandName] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
 
   const inputStyle = { width: "100%", border: "1px solid #D1E8E8", borderRadius: 6, padding: "8px 12px", fontSize: 13, outline: "none", boxSizing: "border-box" }
   const labelStyle = { fontSize: 12, fontWeight: 600, color: "#64748B", marginBottom: 5, display: "block" }
 
-  const handlePrescribe = () => {
-    // TODO: wire to backend prescribe endpoint when available
-    alert(`Prescribing: ${medication} ${dose}`)
-    onClose()
+  const handlePrescribe = async () => {
+    if (!medication.trim() || !dose.trim() || !quantity.trim() || !frequency || !duration) {
+      setError("Please fill in all required fields.")
+      return
+    }
+    setSaving(true)
+    setError("")
+    try {
+      const res = await fetch(`${BASE_URL}/consultations/prescribtion/add/${consultationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          medicine_id: medication,
+          dose,
+          quantity,
+          frequency,
+          duration,
+          instruction: instructions,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.message || "Failed to save prescription.")
+        setSaving(false)
+        return
+      }
+
+      // Send Sendbird notification to patient
+      const doctorSbUserId = localStorage.getItem("sendBirdUserId") || ""
+      const parts = [`💊 Prescription: ${medication} ${dose}`]
+      if (quantity) parts.push(`Qty: ${quantity}`)
+      if (frequency) parts.push(frequency)
+      if (duration) parts.push(duration)
+      if (instructions) parts.push(`Note: ${instructions}`)
+      await sendChatNotification(doctorSbUserId, patientId, parts.join(" · "))
+      window.dispatchEvent(new CustomEvent("consultChatRefresh"))
+
+      onClose()
+    } catch (e) {
+      setError("Network error. Please try again.")
+    }
+    setSaving(false)
   }
 
   return (
@@ -81,12 +124,19 @@ function PrescribeModal({ onClose, consultationId }) {
           </select>
         </div>
       </div>
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 16 }}>
         <label style={labelStyle}>Instructions (optional)</label>
         <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={instructions} onChange={e => setInstructions(e.target.value)} />
       </div>
-      <button onClick={handlePrescribe} style={{ width: "100%", background: "#0D7377", color: "white", border: "none", borderRadius: 8, padding: "12px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-        Prescribe
+
+      {error && <div style={{ marginBottom: 12, fontSize: 13, color: "#EF4444" }}>{error}</div>}
+
+      <button
+        onClick={handlePrescribe}
+        disabled={saving}
+        style={{ width: "100%", background: saving ? "#94A3B8" : "#0D7377", color: "white", border: "none", borderRadius: 8, padding: "12px", fontSize: 15, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer" }}
+      >
+        {saving ? "Saving…" : "Prescribe"}
       </button>
     </ModalShell>
   )

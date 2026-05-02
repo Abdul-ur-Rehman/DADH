@@ -61,6 +61,10 @@ const consultationsSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    billingLockedAt: {
+      type: Date,
+      default: null,
+    },
     AIScribeNote: {
       type: String,
     },
@@ -77,6 +81,10 @@ const consultationsSchema = new mongoose.Schema(
       default: false,
     },
     isPatientCalling: {
+      type: Boolean,
+      default: false,
+    },
+    requiresMedicalCertificate: {
       type: Boolean,
       default: false,
     },

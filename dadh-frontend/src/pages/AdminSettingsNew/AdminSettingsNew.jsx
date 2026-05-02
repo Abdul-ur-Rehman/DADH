@@ -68,7 +68,7 @@ function AdminSettingsNew() {
     if (!newBillCode.trim() || !newBillAmount) return
     setBillSaving(true)
     try {
-      const res = await fetch(`${BASE_URL}/billing/create`, {
+      const res = await fetch(`${BASE_URL}/billing/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ billCode: newBillCode, shortDescription: newBillDesc, amount: Number(newBillAmount) }),
@@ -86,8 +86,8 @@ function AdminSettingsNew() {
 
   const saveBillingEdit = async (item) => {
     try {
-      const res = await fetch(`${BASE_URL}/billing/updateById/${item._id}`, {
-        method: "PATCH",
+      const res = await fetch(`${BASE_URL}/billing/updateOne/${item._id}`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ billCode: item.billCode, shortDescription: item.shortDescription, amount: Number(item.amount) }),
       })

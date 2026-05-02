@@ -431,7 +431,7 @@ const PatientLogin = () => {
                       Signing in...
                     </>
                   ) : (
-                    "Sign In →"
+                    "Sign in"
                   )}
                 </button>
               </form>

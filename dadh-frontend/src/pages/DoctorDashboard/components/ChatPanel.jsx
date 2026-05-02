@@ -1,30 +1,169 @@
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
+import SendbirdChat from "@sendbird/chat"
+import { GroupChannelModule, GroupChannelHandler } from "@sendbird/chat/groupChannel"
 
-function ChatPanel({ activePatientName }) {
+const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID || ""
+const CLINICAL_URL = "dadh-clinical"
+const HANDLER_KEY = "dashboard-chat-panel"
+
+function getDispatcherUrl(userId) {
+  return `dadh-dispatcher-${userId}`
+}
+
+function TabBadge({ count }) {
+  if (!count) return null
+  return (
+    <span style={{
+      background: "#EF4444", color: "#fff", borderRadius: "50%",
+      minWidth: 16, height: 16, fontSize: 10, fontWeight: 700,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      padding: "0 3px", marginLeft: 4, lineHeight: 1,
+    }}>
+      {count > 99 ? "99+" : count}
+    </span>
+  )
+}
+
+function MsgBubble({ msg, isMe }) {
+  const text = msg.message || (msg.messageType === "file" ? `📎 ${msg.name}` : "")
+  if (!text) return null
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", gap: 2 }}>
+      {!isMe && (
+        <span style={{ fontSize: 10, color: "#94A3B8", paddingLeft: 4 }}>
+          {msg.sender?.nickname || msg.sender?.userId?.slice(-6) || "Doctor"}
+        </span>
+      )}
+      <div style={{
+        maxWidth: "78%", padding: "6px 10px",
+        borderRadius: isMe ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
+        background: isMe ? "#0D7377" : "#F0FDFA",
+        color: isMe ? "white" : "#111E1F",
+        fontSize: 13, lineHeight: 1.4, wordBreak: "break-word",
+      }}>
+        {text}
+      </div>
+    </div>
+  )
+}
+
+function ChatPanel({ doctorId }) {
+  const sbUserId = localStorage.getItem("sendBirdUserId") || doctorId || ""
+
   const [activeTab, setActiveTab] = useState("clinical")
-  const [message, setMessage] = useState("")
-  const [messages, setMessages] = useState([
-    { from: "patient", text: "Hi doctor, I have a headache." },
-    { from: "doctor", text: "How long have you had it?" },
-  ])
+  const [msgs, setMsgs] = useState({ clinical: [], dispatcher: [] })
+  const [unread, setUnread] = useState({ clinical: 0, dispatcher: 0 })
+  const [chReady, setChReady] = useState({ clinical: false, dispatcher: false })
+  const [text, setText] = useState("")
+  const [status, setStatus] = useState("init") // "init" | "connecting" | "ready" | "error"
+
+  const sbRef = useRef(null)
+  const channelsRef = useRef({ clinical: null, dispatcher: null })
   const bottomRef = useRef(null)
+  const activeTabRef = useRef("clinical")
+
+  useEffect(() => { activeTabRef.current = activeTab }, [activeTab])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  }, [msgs, activeTab])
 
-  const send = () => {
-    const trimmed = message.trim()
+  const loadChannel = useCallback(async (sb, url, tabKey) => {
+    try {
+      const ch = await sb.groupChannel.getChannel(url)
+      channelsRef.current[tabKey] = ch
+      const q = ch.createPreviousMessageListQuery({ limit: 50, reverse: false })
+      const history = await q.load()
+      setMsgs(prev => ({ ...prev, [tabKey]: history }))
+      setUnread(prev => ({ ...prev, [tabKey]: ch.unreadMessageCount }))
+      setChReady(prev => ({ ...prev, [tabKey]: true }))
+    } catch {
+      // Channel not set up in Sendbird yet
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!APP_ID || !sbUserId) { setStatus("error"); return }
+
+    let mounted = true
+    setStatus("connecting")
+
+    const init = async () => {
+      try {
+        const sb = SendbirdChat.init({ appId: APP_ID, modules: [new GroupChannelModule()] })
+        sbRef.current = sb
+        await sb.connect(sbUserId)
+        if (!mounted) return
+
+        await Promise.all([
+          loadChannel(sb, CLINICAL_URL, "clinical"),
+          loadChannel(sb, getDispatcherUrl(sbUserId), "dispatcher"),
+        ])
+
+        sb.groupChannel.addGroupChannelHandler(HANDLER_KEY, new GroupChannelHandler({
+          onMessageReceived: (channel, message) => {
+            if (!mounted) return
+            let key = null
+            if (channel.url === CLINICAL_URL) key = "clinical"
+            else if (channel.url === getDispatcherUrl(sbUserId)) key = "dispatcher"
+            if (!key) return
+
+            setMsgs(prev => ({ ...prev, [key]: [...prev[key], message] }))
+            if (activeTabRef.current !== key) {
+              setUnread(prev => ({ ...prev, [key]: prev[key] + 1 }))
+            }
+          },
+        }))
+
+        if (mounted) setStatus("ready")
+      } catch (e) {
+        console.error("ChatPanel Sendbird error:", e)
+        if (mounted) setStatus("error")
+      }
+    }
+
+    init()
+
+    return () => {
+      mounted = false
+      if (sbRef.current) {
+        sbRef.current.groupChannel.removeGroupChannelHandler(HANDLER_KEY)
+      }
+    }
+  }, [sbUserId, loadChannel])
+
+  const handleTabSwitch = useCallback((tab) => {
+    setActiveTab(tab)
+    setUnread(prev => ({ ...prev, [tab]: 0 }))
+    const ch = channelsRef.current[tab]
+    if (ch) ch.markAsRead().catch(() => {})
+  }, [])
+
+  const send = useCallback(() => {
+    const trimmed = text.trim()
     if (!trimmed) return
-    setMessages(prev => [...prev, { from: "doctor", text: trimmed }])
-    setMessage("")
-  }
+    const ch = channelsRef.current[activeTab]
+    if (!ch) return
+    setText("")
+    ch.sendUserMessage({ message: trimmed })
+      .onSucceeded((msg) => {
+        setMsgs(prev => ({ ...prev, [activeTab]: [...prev[activeTab], msg] }))
+      })
+      .onFailed((err) => {
+        console.error("Send failed:", err)
+        setText(trimmed)
+      })
+  }, [text, activeTab])
+
+  const canSend = status === "ready" && chReady[activeTab] && text.trim().length > 0
+  const currentMsgs = msgs[activeTab] || []
 
   const tabStyle = (tab) => ({
-    flex: 1, padding: "8px 0", textAlign: "center", fontSize: 12, fontWeight: 600,
-    cursor: "pointer", color: activeTab === tab ? "#0D7377" : "#64748B",
-    background: "none", border: "none",
+    flex: 1, padding: "8px 0", fontSize: 12, fontWeight: 600,
+    cursor: "pointer", background: "none", border: "none",
+    color: activeTab === tab ? "#0D7377" : "#64748B",
     borderBottom: activeTab === tab ? "2px solid #0D7377" : "2px solid transparent",
+    display: "flex", alignItems: "center", justifyContent: "center",
   })
 
   return (
@@ -33,35 +172,41 @@ function ChatPanel({ activePatientName }) {
       border: "1px solid #D1E8E8", borderRadius: 12,
       display: "flex", flexDirection: "column", overflow: "hidden",
     }}>
+      {/* Tabs with unread badges */}
       <div style={{ display: "flex", borderBottom: "1px solid #D1E8E8", background: "#FAFFFE" }}>
-        <button style={tabStyle("clinical")} onClick={() => setActiveTab("clinical")}>CLINICAL</button>
-        <button style={tabStyle("dispatcher")} onClick={() => setActiveTab("dispatcher")}>DISPATCHER</button>
+        {[["clinical", "CLINICAL"], ["dispatcher", "DISPATCHER"]].map(([tab, label]) => (
+          <button key={tab} style={tabStyle(tab)} onClick={() => handleTabSwitch(tab)}>
+            {label}
+            <TabBadge count={unread[tab]} />
+          </button>
+        ))}
       </div>
 
-      {activeTab === "clinical" && activePatientName && (
-        <div style={{ padding: "8px 12px", borderBottom: "1px solid #D1E8E8", background: "#F0FDFA" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#0D7377" }}>{activePatientName}</div>
-          <div style={{ fontSize: 11, color: "#64748B" }}>Active consultation</div>
-        </div>
-      )}
-
+      {/* Messages area */}
       <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: m.from === "doctor" ? "flex-end" : "flex-start" }}>
-            <div style={{
-              maxWidth: "80%", padding: "6px 10px",
-              borderRadius: m.from === "doctor" ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
-              background: m.from === "doctor" ? "#0D7377" : "#F0FDFA",
-              color: m.from === "doctor" ? "white" : "#111E1F",
-              fontSize: 13,
-            }}>
-              {m.text}
-            </div>
-          </div>
+        {status === "connecting" && (
+          <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", margin: "20px 0" }}>Connecting…</p>
+        )}
+        {status === "error" && (
+          <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", margin: "20px 0" }}>
+            {!APP_ID ? "Chat not configured" : "Chat unavailable"}
+          </p>
+        )}
+        {status === "ready" && !chReady[activeTab] && (
+          <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", margin: "20px 0" }}>
+            {activeTab === "clinical" ? "Clinical channel not set up" : "Dispatcher channel not set up"}
+          </p>
+        )}
+        {status === "ready" && chReady[activeTab] && currentMsgs.length === 0 && (
+          <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", margin: "20px 0" }}>No messages yet</p>
+        )}
+        {currentMsgs.map((m, i) => (
+          <MsgBubble key={m.messageId ?? i} msg={m} isMe={m.sender?.userId === sbUserId} />
         ))}
         <div ref={bottomRef} />
       </div>
 
+      {/* Input */}
       <div style={{ padding: "8px 10px", borderTop: "1px solid #D1E8E8" }}>
         <div style={{
           display: "flex", alignItems: "center", gap: 6,
@@ -69,18 +214,27 @@ function ChatPanel({ activePatientName }) {
         }}>
           <input
             type="text"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && send()}
-            placeholder="Type a message…"
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
+            placeholder={status === "ready" && chReady[activeTab] ? "Type a message…" : "Unavailable"}
+            disabled={status !== "ready" || !chReady[activeTab]}
             style={{ flex: 1, border: "none", background: "transparent", outline: "none", fontSize: 13, color: "#111E1F" }}
           />
           <button
             onClick={send}
-            style={{ background: "#0D7377", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+            disabled={!canSend}
+            style={{
+              background: canSend ? "#0D7377" : "#D1E8E8",
+              border: "none", borderRadius: "50%", width: 28, height: 28,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: canSend ? "pointer" : "default", flexShrink: 0,
+              transition: "background 0.15s",
+            }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </button>
         </div>

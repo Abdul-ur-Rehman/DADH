@@ -87,8 +87,20 @@ export default function ConsultationCategorySelector() {
   const [categories, setCategories]           = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading]                 = useState(true);
+  const [blocked, setBlocked]                 = useState(false);
 
   useEffect(() => {
+    const patient = (() => { try { return JSON.parse(localStorage.getItem("patientData"))?.data || {} } catch { return {} } })();
+    const patientId = patient._id;
+    if (patientId) {
+      fetch(`${BASE_URL}/consultations/getConsulationByPatient/${patientId}`)
+        .then(r => r.json())
+        .then(res => {
+          const list = res.data || [];
+          if (list.some(c => !c.isCompleted)) setBlocked(true);
+        })
+        .catch(() => {});
+    }
     fetch(`${BASE_URL}/consultationCategory/getAll`)
       .then((r) => r.json())
       .then((json) => { if (json.data) setCategories(json.data); })
@@ -122,8 +134,33 @@ export default function ConsultationCategorySelector() {
           </p>
         </div>
 
-        {/* Category list */}
-        <div style={{
+        {blocked && (
+          <div style={{
+            background: "#FEF3C7", border: "1px solid #F59E0B", borderRadius: 12,
+            padding: "20px 24px", marginBottom: 24, textAlign: "center",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
+            <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 15, color: "#92400E" }}>
+              You already have a consultation in progress
+            </p>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#78350F" }}>
+              Please wait for your current consultation to be completed before booking a new one.
+            </p>
+            <button
+              onClick={() => navigate("/patient")}
+              style={{
+                background: "#0D7377", color: "white", border: "none",
+                borderRadius: 8, padding: "9px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer",
+              }}
+            >
+              Back to Home
+            </button>
+          </div>
+        )}
+
+
+        {/* Category list — hidden when patient has active consultation */}
+        {!blocked && <div style={{
           background: T.white,
           border: `1px solid ${T.border}`,
           borderRadius: 16,
@@ -157,10 +194,10 @@ export default function ConsultationCategorySelector() {
               ))}
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Next button */}
-        <button
+        {!blocked && <button
           onClick={handleNext}
           disabled={!selectedCategory}
           style={{
@@ -180,7 +217,7 @@ export default function ConsultationCategorySelector() {
           onMouseLeave={(e) => { if (selectedCategory) e.target.style.background = T.teal; }}
         >
           Next: Describe Your Symptoms →
-        </button>
+        </button>}
       </div>
     </div>
   );

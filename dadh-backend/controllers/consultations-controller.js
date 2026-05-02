@@ -387,8 +387,11 @@ const addConsultation = async (req, res, next) => {
       notes,
       type,
       doctorId,
-      requestedCertificate = [], // 👈 safe default
+      requestedCertificate = [],
+      requiresMedicalCertificate = false,
     } = req.body;
+
+    console.log("[addConsultation] requiresMedicalCertificate =", requiresMedicalCertificate, "| body keys:", Object.keys(req.body));
 
     if (!consultationCategory || !patientId || !notes || !type) {
       return res.status(400).json({
@@ -403,7 +406,8 @@ const addConsultation = async (req, res, next) => {
       notes,
       type,
       doctorId,
-      requestedCertificate, // yaha safe hoga ab
+      requestedCertificate,
+      requiresMedicalCertificate,
     });
 
     await newConsultation.save();
@@ -1973,6 +1977,47 @@ const deleteConditionByIndex = async (req, res, next) => {
   }
 };
 
+const BILLING_LOCK_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+const updateBillingCodes = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { billCodes } = req.body;
+
+    if (!Array.isArray(billCodes)) {
+      return res.status(400).json({ state: false, message: "billCodes must be an array." });
+    }
+
+    const consultation = await Consultation.findById(id);
+    if (!consultation) {
+      return res.status(404).json({ state: false, message: "Consultation not found." });
+    }
+
+    // Enforce 12-hour lock
+    if (consultation.billingLockedAt) {
+      const elapsed = Date.now() - new Date(consultation.billingLockedAt).getTime();
+      if (elapsed > BILLING_LOCK_MS) {
+        return res.status(403).json({
+          state: false,
+          message: "Billing codes can no longer be edited — the 12-hour window has passed.",
+          lockedAt: consultation.billingLockedAt,
+        });
+      }
+    }
+
+    const updateFields = { billCodes };
+    // Set the lock timestamp the first time billing codes are added
+    if (!consultation.billingLockedAt && billCodes.length > 0) {
+      updateFields.billingLockedAt = new Date();
+    }
+
+    const updated = await Consultation.findByIdAndUpdate(id, { $set: updateFields }, { new: true });
+    return res.status(200).json({ state: true, message: "Billing codes updated.", data: updated });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAllConsultations,
   addConsultation,
@@ -2011,6 +2056,8 @@ module.exports = {
   getBillingsByDoctorId,
   getReferralsForDoctor,
   updateConsultation,
+  updateBillingCodes,
+
   getConsultations,
   getConsultationCallStatusByPatient,
   getNotesByDoctorId

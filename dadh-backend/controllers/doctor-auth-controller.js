@@ -147,10 +147,17 @@ const login = async (req, res, next) => {
       });
     }
 
+    if (!doctor.isApproved) {
+      return res.status(403).json({
+        state: false,
+        message: "Your account is pending admin approval. You will be notified once approved.",
+      });
+    }
+
     if (doctor.status === 0) {
       return res.status(403).json({
         state: false,
-        message: "Access denied. Your account has been disabled by admin.",
+        message: "Your account has been disabled by admin. Please contact support.",
       });
     }
 

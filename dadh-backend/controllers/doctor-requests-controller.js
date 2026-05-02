@@ -269,10 +269,10 @@ const approveDoctorRequestById = async (req, res) => {
     // Update the doctor and approve
     const updatedDoctor = await Doctor.findByIdAndUpdate(
       id,
-      { ...updateData, isActive: true }, // Make sure to includehere
+      { ...updateData, isApproved: true, status: 1 },
       { new: true }
     ).select(
-      'name surname email phone city state doctorType qualification isActive isSignatureProvided signature startDate isHomeVisit workType isOnline isConsulting activeConsultationId consultedPatients prescriberNumber providerNumber'
+      'name surname email phone city state doctorType qualification isApproved status isSignatureProvided signature startDate isHomeVisit workType isOnline isConsulting activeConsultationId consultedPatients prescriberNumber providerNumber'
     );
 
     if (!updatedDoctor) {

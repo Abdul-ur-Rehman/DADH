@@ -69,6 +69,7 @@ export default function PatientStep2() {
 
   const [description, setDescription]       = useState("");
   const [teleHealthOption, setTeleHealthOption] = useState("videoCall");
+  const [requiresCert, setRequiresCert]     = useState(false);
   const [error, setError]                   = useState("");
   const [submitting, setSubmitting]         = useState(false);
   const [success, setSuccess]               = useState(false);
@@ -108,6 +109,7 @@ export default function PatientStep2() {
           type: teleHealthOption,
           patientId,
           doctorId: "",
+          requiresMedicalCertificate: requiresCert,
         }),
       });
       const data = await res.json();
@@ -209,6 +211,36 @@ export default function PatientStep2() {
             <p style={{ margin: "10px 0 0", fontSize: 12, color: T.muted, fontStyle: "italic" }}>
               Note: the doctor may recommend a different mode based on your symptoms.
             </p>
+          </div>
+
+          {/* Medical certificate request */}
+          <div
+            onClick={() => setRequiresCert(v => !v)}
+            style={{
+              display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer",
+              background: requiresCert ? T.tealLight : "#F8FAFC",
+              border: `1.5px solid ${requiresCert ? T.teal : T.border}`,
+              borderRadius: 10, padding: "14px 16px", marginBottom: 24,
+              transition: "all 0.15s",
+            }}
+          >
+            <div style={{
+              width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 1,
+              border: `2px solid ${requiresCert ? T.teal : "#CBD5E1"}`,
+              background: requiresCert ? T.teal : "white",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.15s",
+            }}>
+              {requiresCert && <span style={{ color: "white", fontSize: 13, lineHeight: 1, fontWeight: 700 }}>✓</span>}
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: requiresCert ? T.teal : T.fg }}>
+                I require a Medical Certificate for this consultation
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: T.muted }}>
+                Let your doctor know you'll need an official medical certificate (e.g. for work or school).
+              </p>
+            </div>
           </div>
 
           {/* Error */}

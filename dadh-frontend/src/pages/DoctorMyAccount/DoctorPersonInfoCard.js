@@ -142,7 +142,7 @@ const DoctorPersonalInfoCard = () => {
         body   : JSON.stringify({ ...doctorData, signature: sig, isSignatureProvided }),
       });
       if (!res.ok) throw new Error("Update failed");
-      navigate("/doctor/myAccount");
+      navigate("/doctor/my-account");
     } catch (err) {
       console.error("Update error:", err);
     }

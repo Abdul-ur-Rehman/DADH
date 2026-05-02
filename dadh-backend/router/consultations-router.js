@@ -45,6 +45,7 @@ router.get("/totalPatientsByConsultation/:id", consultationsController.totalPati
 router.get("/totalCurrentDayConsultationsCount/:id", consultationsController.TotalCurrentDayConsultationsCount);
 router.get("/lastSevenDaysConsultations/:id", consultationsController.getLast7DaysConsultations);
 router.get("/incompleteBillings/:id", consultationsController.getIncompleteBillingConsultations);
+router.patch("/billing/:id", consultationsController.updateBillingCodes);
 router.get("/checkIsDuplicate", consultationsController.checkIsDuplicate);
 router.get("/doctor/:id/notes", consultationsController.getNotesByDoctorId);
 

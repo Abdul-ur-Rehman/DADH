@@ -38,8 +38,8 @@ function DoctorDashboard() {
   const [patients, setPatients] = useState([])
   const [searchQuery, setSearchQuery] = useState("")
   const [consultationId, setConsultationId] = useState(null)
-  const [activeTab, setActiveTab] = useState("telehealth")
   const [loading, setLoading] = useState(true)
+  const [showActiveWarning, setShowActiveWarning] = useState(false)
   const isMountedRef = useRef(true)
 
   const fetchData = async () => {
@@ -119,19 +119,23 @@ function DoctorDashboard() {
         const pd = await pr.json()
         localStorage.setItem("consultPatientData", JSON.stringify(pd.data))
       }
-      navigate(`/doctor/startConsult/${consultationId}/details`)
+      navigate(`/doctor/start-consult/${consultationId}/details`)
     } catch (e) {
       console.error("Return to consult error:", e)
     }
   }
 
   const handleRowClick = async (patient) => {
+    if (consultationId) {
+      setShowActiveWarning(true)
+      return
+    }
     localStorage.setItem("consultPatientData", JSON.stringify({
       name: patient.patientName,
       age: patient.patientAge,
       gender: patient.patientGender,
     }))
-    navigate(`/doctor/startConsult/${patient.consultationId}`)
+    navigate(`/doctor/start-consult/${patient.consultationId}`)
   }
 
   const filtered = patients.filter(p =>
@@ -143,8 +147,8 @@ function DoctorDashboard() {
   const todayStr = new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })
 
   return (
-    <DoctorAppLayout>
-      <div className="dadh-tw-root" style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#FAFFFE", overflow: "hidden" }}>
+    <DoctorAppLayout mainStyle={{ padding: 0, overflow: "hidden" }}>
+      <div className="dadh-tw-root" style={{ display: "flex", flexDirection: "column", height: "100%", background: "#FAFFFE" }}>
         <TopStatsBar
           billingEarned={0}
           billingPending={0}
@@ -156,27 +160,9 @@ function DoctorDashboard() {
 
         <div style={{ display: "flex", flex: 1, gap: 16, padding: 16, overflow: "hidden" }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-              <div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111E1F", margin: 0 }}>Patients Waiting</h2>
-                <div style={{ fontSize: 13, color: "#64748B", marginTop: 2 }}>{greeting}, Dr. {doctorData.name} — {todayStr}</div>
-              </div>
-              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                {["telehealth", "homevisit"].map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    style={{
-                      background: "none", border: "none", padding: "6px 14px", cursor: "pointer",
-                      fontSize: 13, fontWeight: 600, textTransform: "uppercase",
-                      color: activeTab === tab ? "#0D7377" : "#94A3B8",
-                      borderBottom: activeTab === tab ? "2px solid #0D7377" : "2px solid transparent",
-                    }}
-                  >
-                    {tab === "telehealth" ? "Telehealth" : "Home Visits"}
-                  </button>
-                ))}
-              </div>
+            <div style={{ marginBottom: 12 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111E1F", margin: 0 }}>Patients Waiting</h2>
+              <div style={{ fontSize: 13, color: "#64748B", marginTop: 2 }}>{greeting}, Dr. {doctorData.name} — {todayStr}</div>
             </div>
 
             {consultationId && (
@@ -212,9 +198,49 @@ function DoctorDashboard() {
             </div>
           </div>
 
-          <ChatPanel activePatientName={consultationId ? "Active Patient" : null} />
+          <ChatPanel doctorId={doctorId} />
         </div>
       </div>
+
+      {showActiveWarning && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000,
+        }}>
+          <div style={{
+            background: "white", borderRadius: 14, padding: 32, maxWidth: 420, width: "90%",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.25)", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+            <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 700, color: "#111E1F" }}>
+              Active Consultation Running
+            </h3>
+            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#64748B", lineHeight: 1.5 }}>
+              You already have a consultation in progress. Please complete or requeue it before accepting another patient.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button
+                onClick={() => setShowActiveWarning(false)}
+                style={{
+                  background: "#F1F5F9", color: "#475569", border: "none",
+                  borderRadius: 8, padding: "9px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => { setShowActiveWarning(false); handleReturnToConsult() }}
+                style={{
+                  background: "#0D7377", color: "white", border: "none",
+                  borderRadius: 8, padding: "9px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                Return to Consult
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DoctorAppLayout>
   )
 }

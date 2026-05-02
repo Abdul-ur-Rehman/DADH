@@ -204,28 +204,28 @@ const SidebarContent = (props) => {
           
 
             <li>
-              <Link to="/admin/doctorRequests/table" className="waves-effect">
+              <Link to="/admin/doctor-requests/table" className="waves-effect">
                 <UserCheck size={18} style={{ marginRight: 8 }} />
                 <span>{props.t("Doctors")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/admin/consultationCategory/table" className="waves-effect">
+              <Link to="/admin/consultation-category/table" className="waves-effect">
                 <List size={18} style={{ marginRight: 8 }} />
                 <span>{props.t("Consultation Category")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/admin/patientDetails/table" className="waves-effect">
+              <Link to="/admin/patient-details/table" className="waves-effect">
                 <Users size={18} style={{ marginRight: 8 }} />
                 <span>{props.t("Patient Details")}</span>
               </Link>
             </li>
 
             <li>
-              <Link to="/admin/billingCode/table" className="waves-effect">
+              <Link to="/admin/billing-code/table" className="waves-effect">
                 <CreditCard size={18} style={{ marginRight: 8 }} />
                 <span>{props.t("Billing Code")}</span>
               </Link>

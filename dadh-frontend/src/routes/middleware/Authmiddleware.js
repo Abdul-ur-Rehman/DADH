@@ -1,6 +1,12 @@
 // src/routes/middleware/Authmiddleware.js
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
+import {
+  clearDoctorSession,
+  getDoctorSessionInvalidation,
+} from "../../components/DoctorLayout/doctorSessionStatus";
+
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001/api";
 
 // Each portal sets its own flag on login; these are never overwritten by other portals.
 const isPatientLoggedIn = () =>
@@ -20,12 +26,65 @@ const SESSION_VALID = {
 };
 
 const LOGIN_REDIRECT = {
-  patient: "/patient/Login",
+  patient: "/patient/login",
   doctor: "/doctor/login",
   admin: "/admin/login",
 };
 
+const readDoctorId = () => {
+  try {
+    const storedDoctor = JSON.parse(localStorage.getItem("data"));
+    return (storedDoctor && storedDoctor.data && storedDoctor.data._id) || localStorage.getItem("doctorId") || "";
+  } catch {
+    return localStorage.getItem("doctorId") || "";
+  }
+};
+
 const Authmiddleware = ({ children, allowedRoles }) => {
+  const [forcedRedirect, setForcedRedirect] = useState("");
+  const forcedLogoutRef = useRef(false);
+
+  useEffect(() => {
+    if (!allowedRoles || !allowedRoles.includes("doctor")) return undefined;
+    if (!isDoctorLoggedIn()) return undefined;
+
+    const doctorId = readDoctorId();
+    if (!doctorId) return undefined;
+
+    let cancelled = false;
+
+    const checkDoctorSession = async () => {
+      if (cancelled || forcedLogoutRef.current) return;
+
+      try {
+        const response = await fetch(`${BASE_URL}/doctor-requests/getOneById/${doctorId}`);
+        const result = await response.json();
+        if (cancelled || forcedLogoutRef.current || !response.ok) return;
+
+        const message = getDoctorSessionInvalidation(result.data);
+        if (!message) return;
+
+        forcedLogoutRef.current = true;
+        clearDoctorSession(message);
+        setForcedRedirect("/doctor/login");
+      } catch {
+        // Keep the current session during transient network/API failures.
+      }
+    };
+
+    checkDoctorSession();
+    const interval = setInterval(checkDoctorSession, 10000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [allowedRoles]);
+
+  if (forcedRedirect) {
+    return <Navigate to={forcedRedirect} replace />;
+  }
+
   if (!allowedRoles || allowedRoles.length === 0) {
     return <>{children}</>;
   }
